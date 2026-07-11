@@ -703,6 +703,20 @@ select {
 .w-full        { width: 100%; }
 .hidden        { display: none !important; }
 
+/* ─── App Footer ────────────────────────────────────────────────────────── */
+.app-footer {
+  margin-top: 48px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.app-footer-text {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 800px) {
   .sidebar { width: 50px; }
