@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Prep — Session</title>
+  <meta name="description" content="Note down your IELTS test answers, scores, and observations section by section." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .section-color-line {
+      width: 4px;
+      height: 28px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .q-table-wrap { overflow-x: auto; }
+    .add-q-row { margin-top: 10px; }
+    .writing-task-wrap { background: var(--bg-elevated); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .writing-task-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+    .writing-task-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+    .speaking-part-wrap { background: var(--bg-elevated); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); }
+    .cue-card-box { background: var(--bg-card); border: 1px dashed var(--border-strong); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; }
+    .mode-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+    .timer-running { color: var(--success) !important; }
+    .timer-stopped { color: var(--text-muted) !important; }
+    .section-save-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .score-inputs { display: flex; align-items: center; gap: 8px; }
+    .score-inputs input { width: 70px; text-align: center; }
+    .score-inputs span { color: var(--text-muted); font-weight: 600; font-size: 16px; }
+    .correct-tally { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    [data-theme="light"] .card-glass { background: rgba(255,255,255,0.9); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="/" class="logo-mark">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <div class="logo-text">IELTS Prep</div>
+          <div class="logo-sub">Academic</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item" data-page="progress"><span class="nav-icon">📊</span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
+        <span class="nav-icon theme-toggle-label">☀️</span>
+        <span>Toggle Theme</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <a href="/">Dashboard</a>
+          <span class="sep">›</span>
+          <a href="#" id="breadcrumb-book">Book</a>
+          <span class="sep">›</span>
+          <span class="current" id="breadcrumb-test">Test</span>
+        </div>
+      </div>
+      <div class="topbar-right" style="gap:10px;">
+        <span id="test-mode-badge" class="mode-badge badge-blue">✏️ Practice</span>
+        <button class="btn btn-ghost btn-sm" id="btn-edit-test">✏️ Edit Test</button>
+        <a href="#" id="btn-back-book" class="btn btn-secondary btn-sm">← Back to Book</a>
+      </div>
+    </header>
+
+    <!-- Sticky Timer Bar -->
+    <div class="timer-bar">
+      <div class="timer-display">
+        <div>
+          <div class="timer-label">Elapsed Time</div>
+          <div class="timer-digits" id="timer-display">00:00</div>
+        </div>
+        <div style="margin-left:8px;">
+          <button class="btn btn-ghost btn-sm" id="btn-timer-start">▶ Start</button>
+          <button class="btn btn-ghost btn-sm hidden" id="btn-timer-stop">⏸ Pause</button>
+          <button class="btn btn-ghost btn-sm" id="btn-timer-reset">↺ Reset</button>
+        </div>
+      </div>
+      <div class="timer-section-info" id="timer-section-info">Select a section below</div>
+      <div class="timer-limit" id="timer-limit"></div>
+    </div>
+
+    <main class="page-content">
+      <!-- Section Tabs -->
+      <div class="tabs-bar" id="section-tabs">
+        <button class="tab-btn" data-section="Listening" onclick="switchSection('Listening')">🎧 Listening</button>
+        <button class="tab-btn" data-section="Reading" onclick="switchSection('Reading')">📖 Reading</button>
+        <button class="tab-btn" data-section="Writing" onclick="switchSection('Writing')">✍️ Writing</button>
+        <button class="tab-btn" data-section="Speaking" onclick="switchSection('Speaking')">🗣️ Speaking</button>
+      </div>
+
+      <!-- LISTENING -->
+      <div class="tab-panel" id="panel-Listening">
+        <div class="section-header-bar">
+          <div class="section-color-line" style="background:#3b82f6;"></div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Listening Section</div>
+            <div style="font-size:12px;color:var(--text-muted);">4 Parts · 40 Questions · 30 minutes</div>
+          </div>
+        </div>
+        <div id="listening-parts"></div>
+        <div class="section-save-bar">
+          <div class="correct-tally" id="listening-tally">— / 40 correct</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-success" onclick="saveSection('Listening')">💾 Save Listening</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- READING -->
+      <div class="tab-panel" id="panel-Reading">
+        <div class="section-header-bar">
+          <div class="section-color-line" style="background:#10b981;"></div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Reading Section</div>
+            <div style="font-size:12px;color:var(--text-muted);">3 Passages · 40 Questions · 60 minutes</div>
+          </div>
+        </div>
+        <div id="reading-passages"></div>
+        <div class="section-save-bar">
+          <div class="correct-tally" id="reading-tally">— / 40 correct</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-success" onclick="saveSection('Reading')">💾 Save Reading</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WRITING -->
+      <div class="tab-panel" id="panel-Writing">
+        <div class="section-header-bar">
+          <div class="section-color-line" style="background:#f59e0b;"></div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Writing Section</div>
+            <div style="font-size:12px;color:var(--text-muted);">2 Tasks · 60 minutes · Academic</div>
+          </div>
+        </div>
+        <div id="writing-tasks"></div>
+        <div class="section-save-bar">
+          <div></div>
+          <button class="btn btn-success" onclick="saveSection('Writing')">💾 Save Writing</button>
+        </div>
+      </div>
+
+      <!-- SPEAKING -->
+      <div class="tab-panel" id="panel-Speaking">
+        <div class="section-header-bar">
+          <div class="section-color-line" style="background:#8b5cf6;"></div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text-primary);">Speaking Section</div>
+            <div style="font-size:12px;color:var(--text-muted);">3 Parts · 11–14 minutes</div>
+          </div>
+        </div>
+        <div id="speaking-parts"></div>
+        <div class="section-save-bar">
+          <div></div>
+          <button class="btn btn-success" onclick="saveSection('Speaking')">💾 Save Speaking</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Edit Test Modal -->
+<div class="modal-overlay" id="modal-edit-test">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit Test</h3>
+      <button class="modal-close" onclick="Modal.close('modal-edit-test')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Test Number</label>
+        <input type="text" id="edit-test-num" />
+      </div>
+      <div class="form-group">
+        <label>Mode</label>
+        <select id="edit-test-mode">
+          <option value="practice">✏️ Practice</option>
+          <option value="mock">🏁 Mock Test</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="edit-test-date" />
+    </div>
+    <div class="form-group">
+      <label>Overall Score / Band</label>
+      <input type="number" id="edit-test-score" step="0.5" min="0" max="9" placeholder="e.g. 7.5" />
+    </div>
+    <div class="form-group">
+      <label>Test Notes</label>
+      <textarea id="edit-test-notes" rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-edit-test')">Cancel</button>
+      <button class="btn btn-primary" id="btn-update-test">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script src="/js/session.js"></script>
+</body>
+</html>

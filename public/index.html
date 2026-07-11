@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Prep — Dashboard</title>
+  <meta name="description" content="Your personal IELTS Academic preparation notebook. Track tests, scores, and progress across all sections." />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="/" class="logo-mark">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <div class="logo-text">IELTS Prep</div>
+          <div class="logo-sub">Academic</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item active" data-page="index">
+        <span class="nav-icon">🏠</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="/progress.html" class="nav-item" data-page="progress">
+        <span class="nav-icon">📊</span>
+        <span>Progress</span>
+      </a>
+      <a href="/settings.html" class="nav-item" data-page="settings">
+        <span class="nav-icon">⚙️</span>
+        <span>Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
+        <span class="nav-icon theme-toggle-label">☀️</span>
+        <span>Toggle Theme</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="current">Dashboard</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="btn-new-book">
+          <span>➕</span> New Book
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Stats Row -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card" style="--accent-color:#3b82f6">
+          <div class="stat-icon">📚</div>
+          <div class="stat-value" id="stat-books">—</div>
+          <div class="stat-label">Books</div>
+        </div>
+        <div class="stat-card" style="--accent-color:#10b981">
+          <div class="stat-icon">📝</div>
+          <div class="stat-value" id="stat-tests">—</div>
+          <div class="stat-label">Tests Done</div>
+        </div>
+        <div class="stat-card" style="--accent-color:#f59e0b">
+          <div class="stat-icon">🎧</div>
+          <div class="stat-value" id="stat-listen">—</div>
+          <div class="stat-label">Avg Listening %</div>
+        </div>
+        <div class="stat-card" style="--accent-color:#8b5cf6">
+          <div class="stat-icon">📖</div>
+          <div class="stat-value" id="stat-read">—</div>
+          <div class="stat-label">Avg Reading %</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Books List -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="page-title" style="font-size:18px;">My Books</h2>
+          </div>
+          <div id="books-grid" class="grid-auto" style="grid-template-columns: repeat(auto-fill, minmax(220px,1fr));"></div>
+          <div id="books-empty" class="empty-state hidden">
+            <div class="empty-state-icon">📚</div>
+            <h3>No books yet</h3>
+            <p>Add your first IELTS book to get started tracking your tests.</p>
+            <button class="btn btn-primary" id="btn-new-book-2">➕ Add Book</button>
+          </div>
+        </div>
+
+        <!-- Recent Tests -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="page-title" style="font-size:18px;">Recent Tests</h2>
+            <a href="/progress.html" class="btn btn-ghost btn-sm">View All →</a>
+          </div>
+          <div id="recent-tests-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <div id="recent-empty" class="empty-state hidden" style="padding:30px 20px;">
+            <div class="empty-state-icon">📝</div>
+            <h3>No tests yet</h3>
+            <p>Open a book and start your first test.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Book Modal -->
+<div class="modal-overlay" id="modal-add-book">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">📚 Add New Book</h3>
+      <button class="modal-close" onclick="Modal.close('modal-add-book')">✕</button>
+    </div>
+    <div class="form-group">
+      <label for="book-name-input">Book Name</label>
+      <input type="text" id="book-name-input" placeholder="e.g. Cambridge IELTS 18" autocomplete="off" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-add-book')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-book">Save Book</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Book Modal (Dashboard) -->
+<div class="modal-overlay" id="modal-edit-book-dash">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit Book Name</h3>
+      <button class="modal-close" onclick="Modal.close('modal-edit-book-dash')">✕</button>
+    </div>
+    <div class="form-group">
+      <label for="edit-book-name-dash">Book Name</label>
+      <input type="text" id="edit-book-name-dash" placeholder="e.g. Cambridge IELTS 18" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-edit-book-dash')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-edit-book-dash">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

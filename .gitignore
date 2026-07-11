@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# SQLite database (local data — don't commit)
+ielts_prep.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Editor
+.vscode/
+.idea/
+
+# Build artifacts
+dist/

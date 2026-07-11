@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Prep — Settings</title>
+  <meta name="description" content="Manage your IELTS Prep app settings, export and import data." />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="/" class="logo-mark">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <div class="logo-text">IELTS Prep</div>
+          <div class="logo-sub">Academic</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item" data-page="progress"><span class="nav-icon">📊</span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item active" data-page="settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
+        <span class="nav-icon theme-toggle-label">☀️</span>
+        <span>Toggle Theme</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <a href="/">Dashboard</a>
+          <span class="sep">›</span>
+          <span class="current">Settings</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content" style="max-width:680px;">
+      <div class="page-header">
+        <h1 class="page-title">⚙️ Settings</h1>
+        <p class="page-subtitle">App preferences, data backup & restore</p>
+      </div>
+
+      <!-- Appearance -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="card-title">🎨 Appearance</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Theme</div>
+            <div style="font-size:12px;color:var(--text-muted);">Switch between dark and light mode</div>
+          </div>
+          <button class="btn btn-secondary theme-toggle-btn" data-action="toggle-theme" id="theme-toggle-settings">
+            <span class="theme-toggle-label">☀️</span> Toggle Theme
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="card-title">💾 Data Management</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Export Backup</div>
+              <div style="font-size:12px;color:var(--text-muted);">Download all your data as a JSON file</div>
+            </div>
+            <button class="btn btn-primary" id="btn-export">📤 Export JSON</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Import Backup</div>
+              <div style="font-size:12px;color:var(--text-muted);">Restore data from a previously exported JSON file</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="file" id="import-file" accept=".json" style="display:none;" />
+              <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📥 Choose File</button>
+              <button class="btn btn-danger" id="btn-import" disabled>Restore</button>
+            </div>
+          </div>
+          <div id="import-filename" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+
+      <!-- IELTS Quick Reference -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="card-title">📋 IELTS Academic Quick Reference</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+          <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px;">
+            <div style="font-weight:700;color:#3b82f6;margin-bottom:6px;">🎧 Listening — 30 min · 40 Q</div>
+            <div style="color:var(--text-secondary);">Part 1: Social conversation · Part 2: Social monologue · Part 3: Academic discussion · Part 4: Academic lecture</div>
+          </div>
+          <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px;">
+            <div style="font-weight:700;color:#10b981;margin-bottom:6px;">📖 Reading — 60 min · 40 Q · 3 Passages</div>
+            <div style="color:var(--text-secondary);">14 question types: Multiple Choice, T/F/NG, Y/N/NG, Matching Headings, Matching Info, Matching Features, Sentence Endings, Sentence Completion, Summary Completion, Note Completion, Table Completion, Flow-chart, Diagram Label, Short Answer</div>
+          </div>
+          <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px;">
+            <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;">✍️ Writing — 60 min · 2 Tasks</div>
+            <div style="color:var(--text-secondary);">Task 1: Describe visual (≥150 words) · Task 2: Essay (≥250 words, more weightage)</div>
+          </div>
+          <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px;">
+            <div style="font-weight:700;color:#8b5cf6;margin-bottom:6px;">🗣️ Speaking — 11–14 min · 3 Parts</div>
+            <div style="color:var(--text-secondary);">Part 1: Intro topics (4–5 min) · Part 2: Cue card (1 min prep, 1–2 min speak) · Part 3: Abstract discussion (4–5 min)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="border-color:rgba(244,63,94,0.25);">
+        <div class="card-header">
+          <div class="card-title" style="color:var(--danger);">⚠️ Danger Zone</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text-primary);">Delete All Data</div>
+            <div style="font-size:12px;color:var(--text-muted);">Permanently delete all books, tests, and records. Cannot be undone.</div>
+          </div>
+          <button class="btn btn-danger" id="btn-delete-all">🗑️ Delete Everything</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+// Settings page logic
+
+// ─── Export ──────────────────────────────────────────────────────────────
+
+document.getElementById('btn-export').addEventListener('click', async () => {
+  try {
+    const data = await api.get('/api/backup');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ielts_prep_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    Toast.success('Backup exported!');
+  } catch(e) {
+    Toast.error('Export failed');
+  }
+});
+
+// ─── Import ──────────────────────────────────────────────────────────────
+
+let importData = null;
+
+document.getElementById('import-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('import-filename').textContent = `Selected: ${file.name}`;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      importData = JSON.parse(ev.target.result);
+      document.getElementById('btn-import').disabled = false;
+      Toast.info('File loaded. Click "Restore" to apply.');
+    } catch(err) {
+      Toast.error('Invalid JSON file');
+      importData = null;
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('btn-import').addEventListener('click', async () => {
+  if (!importData) return;
+  if (!confirm('This will REPLACE all your current data with the backup. Are you sure?')) return;
+  try {
+    await api.post('/api/restore', importData);
+    Toast.success('Data restored successfully!');
+    setTimeout(() => window.location.href = '/', 1500);
+  } catch(e) {
+    Toast.error('Restore failed. Check the file format.');
+  }
+});
+
+// ─── Delete All ───────────────────────────────────────────────────────────
+
+document.getElementById('btn-delete-all').addEventListener('click', async () => {
+  const confirm1 = confirm('Are you ABSOLUTELY sure? This will delete ALL books, tests, and records permanently.');
+  if (!confirm1) return;
+  const confirm2 = prompt('Type "DELETE" to confirm:');
+  if (confirm2 !== 'DELETE') { Toast.info('Cancelled'); return; }
+  try {
+    await api.post('/api/restore', { books: [], tests: [], sections: [], questions: [] });
+    Toast.success('All data deleted');
+    setTimeout(() => window.location.href = '/', 1500);
+  } catch(e) {
+    Toast.error('Failed to delete data');
+  }
+});
+</script>
+</body>
+</html>

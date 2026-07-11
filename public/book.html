@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Prep — Book</title>
+  <meta name="description" content="View all tests in this IELTS book." />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="/" class="logo-mark">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <div class="logo-text">IELTS Prep</div>
+          <div class="logo-sub">Academic</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item" data-page="progress"><span class="nav-icon">📊</span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
+        <span class="nav-icon theme-toggle-label">☀️</span>
+        <span>Toggle Theme</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <a href="/">Dashboard</a>
+          <span class="sep">›</span>
+          <span class="current" id="breadcrumb-book">Book</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost btn-sm" id="btn-edit-book">✏️ Edit Book</button>
+        <button class="btn btn-danger btn-sm" id="btn-delete-book">🗑️ Delete Book</button>
+        <button class="btn btn-primary" id="btn-new-test">➕ New Test</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title" id="book-title">Loading…</h1>
+        <div class="page-subtitle" id="book-subtitle"></div>
+      </div>
+
+      <div id="tests-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div id="tests-empty" class="empty-state hidden">
+        <div class="empty-state-icon">📝</div>
+        <h3>No tests yet</h3>
+        <p>Add your first test from this book to start tracking your progress.</p>
+        <button class="btn btn-primary" onclick="Modal.open('modal-new-test')">➕ Add Test</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- New Test Modal -->
+<div class="modal-overlay" id="modal-new-test">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">📝 New Test</h3>
+      <button class="modal-close" onclick="Modal.close('modal-new-test')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="test-num">Test Number</label>
+        <input type="text" id="test-num" placeholder="e.g. 1, 2, 3A…" />
+      </div>
+      <div class="form-group">
+        <label for="test-mode">Mode</label>
+        <select id="test-mode">
+          <option value="practice">✏️ Practice</option>
+          <option value="mock">🏁 Mock Test</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="test-date">Date</label>
+      <input type="date" id="test-date" />
+    </div>
+    <div class="form-group">
+      <label for="test-notes">Notes (optional)</label>
+      <textarea id="test-notes" placeholder="Any notes about this test session…" rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-new-test')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-test">Create Test →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal-overlay" id="modal-edit-book">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit Book Name</h3>
+      <button class="modal-close" onclick="Modal.close('modal-edit-book')">✕</button>
+    </div>
+    <div class="form-group">
+      <label for="edit-book-name">Book Name</label>
+      <input type="text" id="edit-book-name" placeholder="e.g. Cambridge IELTS 18" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-edit-book')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-edit-book">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script src="/js/book.js"></script>
+</body>
+</html>
