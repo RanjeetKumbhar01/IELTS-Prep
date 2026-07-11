@@ -44,8 +44,8 @@ function switchSection(sectionName) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(`panel-${sectionName}`).classList.add('active');
   const limits = { Listening: '30 min', Reading: '60 min', Writing: '60 min', Speaking: '14 min' };
-  document.getElementById('timer-section-info').textContent = `${getSectionIcon(sectionName)} ${sectionName}`;
-  document.getElementById('timer-limit').textContent = `⏱ Limit: ${limits[sectionName]}`;
+  document.getElementById('timer-section-info').textContent = sectionName;
+  document.getElementById('timer-limit').textContent = `Limit: ${limits[sectionName]}`;
   resetTimer();
 }
 
@@ -63,7 +63,7 @@ function cycleCorrect(btn) {
 function buildCorrectToggle(val) {
   const icons = { '1': '✓', '0': '✗', '': '·' };
   const v = val === null || val === undefined ? '' : String(val);
-  return `<button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)" title="Click: · → ✓ → ✗">${icons[v] || '·'}</button>`;
+  return `<button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)">${icons[v] || '·'}</button>`;
 }
 
 function updateTally() {
@@ -74,11 +74,11 @@ function updateTally() {
     const correct = [...all].filter(b => b.dataset.val === '1').length;
     const answered = [...all].filter(b => b.dataset.val !== '').length;
     const el = document.getElementById(`${sec.toLowerCase()}-tally`);
-    if (el) el.textContent = `${correct} correct · ${answered} answered / ${all.length} total`;
+    if (el) el.textContent = `${correct} correct / ${all.length} total (${answered} answered)`;
   });
 }
 
-// ─── Question Row Builder (simplified — no per-row type column) ───────────
+// ─── Question Row Builder ────────────────────────────────────────────────
 
 function buildQuestionRow(num, q = {}) {
   const v = q.is_correct === null || q.is_correct === undefined ? '' : String(q.is_correct);
@@ -86,11 +86,11 @@ function buildQuestionRow(num, q = {}) {
   return `
     <tr class="q-row" data-qnum="${num}" data-qtype="">
       <td class="q-num">${num}</td>
-      <td><input type="text" class="q-answer-input" value="${escapeHtml(q.my_answer || '')}" placeholder="Your answer…" /></td>
-      <td><input type="text" class="q-answer-input" value="${escapeHtml(q.correct_answer || '')}" placeholder="Correct answer…" /></td>
-      <td><button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)" title="· → ✓ → ✗">${icons[v] || '·'}</button></td>
-      <td><input type="text" class="q-note-input" value="${escapeHtml(q.personal_note || '')}" placeholder="Note…" /></td>
-      <td><button class="btn-del-row" onclick="deleteQuestionRow(this)" title="Delete row">✕</button></td>
+      <td><input type="text" class="q-answer-input" value="${escapeHtml(q.my_answer || '')}" placeholder="Your answer" /></td>
+      <td><input type="text" class="q-answer-input" value="${escapeHtml(q.correct_answer || '')}" placeholder="Correct answer" /></td>
+      <td><button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)">${icons[v] || '·'}</button></td>
+      <td><input type="text" class="q-note-input" value="${escapeHtml(q.personal_note || '')}" placeholder="Note" /></td>
+      <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
     </tr>`;
 }
 
@@ -133,11 +133,11 @@ function addQuestionRow(tbodyId, qtype) {
   tr.dataset.qtype = qtype || '';
   tr.innerHTML = `
     <td class="q-num">${nextNum}</td>
-    <td><input type="text" class="q-answer-input" placeholder="Your answer…" /></td>
-    <td><input type="text" class="q-answer-input" placeholder="Correct answer…" /></td>
-    <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)" title="· → ✓ → ✗">·</button></td>
-    <td><input type="text" class="q-note-input" placeholder="Note…" /></td>
-    <td><button class="btn-del-row" onclick="deleteQuestionRow(this)" title="Delete row">✕</button></td>
+    <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
+    <td><input type="text" class="q-answer-input" placeholder="Correct answer" /></td>
+    <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
+    <td><input type="text" class="q-note-input" placeholder="Note" /></td>
+    <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
   updateTally();
@@ -174,11 +174,11 @@ function rebuildPartQuestions(partId) {
       tr.dataset.qtype = qtype;
       tr.innerHTML = `
         <td class="q-num">${i}</td>
-        <td><input type="text" class="q-answer-input" placeholder="Your answer…" /></td>
-        <td><input type="text" class="q-answer-input" placeholder="Correct answer…" /></td>
-        <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)" title="· → ✓ → ✗">·</button></td>
-        <td><input type="text" class="q-note-input" placeholder="Note…" /></td>
-        <td><button class="btn-del-row" onclick="deleteQuestionRow(this)" title="Delete row">✕</button></td>
+        <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
+        <td><input type="text" class="q-answer-input" placeholder="Correct answer" /></td>
+        <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
+        <td><input type="text" class="q-note-input" placeholder="Note" /></td>
+        <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
       `;
       tbody.appendChild(tr);
     }
@@ -188,7 +188,6 @@ function rebuildPartQuestions(partId) {
     }
   }
 
-  // Auto-update max score to match count (only if not manually set)
   const maxInp = document.getElementById(`${partId}-max`);
   if (maxInp) maxInp.placeholder = String(count);
 
@@ -205,31 +204,31 @@ function buildPartSettingsHTML(partId, secData, partQType, qCount) {
   return `
     <div class="part-settings">
       <div class="form-group">
-        <label>Question Type (All Questions in This Part)</label>
+        <label>Question Type</label>
         <select id="${partId}-qtype" onchange="applyPartQType('${partId}')">
           ${typeOpts}
         </select>
       </div>
       <div class="form-group">
-        <label>No. of Questions</label>
+        <label>Questions</label>
         <input type="number" id="${partId}-qcount" min="1" max="50"
-          value="${qCount}" style="width:80px;"
+          value="${qCount}" style="width:70px;"
           onchange="rebuildPartQuestions('${partId}')" />
       </div>
       <div class="form-group">
         <label>Time (min)</label>
         <input type="number" id="${partId}-time" min="0" max="90"
-          value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" />
+          value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:70px;" />
       </div>
       <div class="form-group">
         <label>Score</label>
         <input type="number" id="${partId}-score-inp" min="0"
-          value="${secData ? secData.score : ''}" placeholder="0" step="0.5" />
+          value="${secData ? secData.score : ''}" placeholder="0" step="0.5" style="width:70px;" />
       </div>
       <div class="form-group">
         <label>Max</label>
         <input type="number" id="${partId}-max" min="0"
-          value="${secData ? secData.max_score : qCount}" placeholder="${qCount}" />
+          value="${secData ? secData.max_score : qCount}" placeholder="${qCount}" style="width:70px;" />
       </div>
     </div>`;
 }
@@ -240,12 +239,12 @@ function buildQTable(partId, tbodyHtml) {
       <table class="question-table" id="${partId}-table">
         <thead>
           <tr>
-            <th style="width:36px;">#</th>
+            <th style="width:30px;">#</th>
             <th>My Answer</th>
             <th>Correct Answer</th>
-            <th style="width:44px;">✓/✗</th>
-            <th>Personal Note</th>
-            <th style="width:32px;"></th>
+            <th style="width:40px;">Mark</th>
+            <th>Note</th>
+            <th style="width:30px;"></th>
           </tr>
         </thead>
         <tbody id="${partId}-body">${tbodyHtml}</tbody>
@@ -254,7 +253,7 @@ function buildQTable(partId, tbodyHtml) {
     <div class="flex gap-2 mt-2">
       <button class="btn btn-ghost btn-sm"
         onclick="addQuestionRow('${partId}-body', document.getElementById('${partId}-qtype')?.value || '')">
-        + Add Row
+        Add Row
       </button>
     </div>`;
 }
@@ -265,7 +264,7 @@ function buildListeningParts(existingData) {
   const container = document.getElementById('listening-parts');
   container.innerHTML = '';
 
-  const colors = ['#38bdf8', '#a78bfa', '#34d399', '#fbbf24'];
+  const colors = ['#0284c7', '#a78bfa', '#059669', '#d97706'];
 
   IELTS.LISTENING_PARTS.forEach(part => {
     const secData  = existingData?.sections?.find(s => s.part_number === part.num);
@@ -300,18 +299,16 @@ function buildListeningParts(existingData) {
         <div class="form-group mt-3">
           <label>Part ${part.num} Notes</label>
           <textarea id="${partId}-notes" rows="2"
-            placeholder="Strategy notes, vocabulary, observations…"
+            placeholder="Strategy, mistakes, vocabulary..."
           >${secData ? escapeHtml(secData.notes) : ''}</textarea>
         </div>
       </div>`;
 
     container.appendChild(block);
 
-    // Propagate qtype to rows after DOM insert
     if (partQType) setTimeout(() => applyPartQType(partId), 50);
   });
 
-  // Open part 1 by default
   document.querySelector('#listen-part-1')?.classList.add('open');
 }
 
@@ -321,9 +318,8 @@ function buildReadingPassages(existingData) {
   const container = document.getElementById('reading-passages');
   container.innerHTML = '';
 
-  // Default question counts (total = 40, roughly)
   const defaultCounts = [13, 14, 13];
-  const colors = ['#34d399', '#38bdf8', '#a78bfa'];
+  const colors = ['#059669', '#0284c7', '#7c3aed'];
 
   IELTS.READING_PASSAGES.forEach(passage => {
     const secData   = existingData?.sections?.find(s => s.part_number === passage.num);
@@ -342,7 +338,7 @@ function buildReadingPassages(existingData) {
           <div class="part-dot" style="background:${colors[passage.num - 1]};"></div>
           <div>
             <div class="part-title">${passage.context}</div>
-            <div class="part-subtitle">Default Q range: ${passage.qRange} (adjustable)</div>
+            <div class="part-subtitle">Default Q range: ${passage.qRange}</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -358,7 +354,7 @@ function buildReadingPassages(existingData) {
         <div class="form-group mt-3">
           <label>Passage ${passage.num} Notes</label>
           <textarea id="${partId}-notes" rows="2"
-            placeholder="Passage topic, strategy used, tricky questions…"
+            placeholder="Passage topics, details..."
           >${secData ? escapeHtml(secData.notes) : ''}</textarea>
         </div>
       </div>`;
@@ -387,39 +383,39 @@ function buildWritingTasks(existingData) {
     const div = document.createElement('div');
     div.className = 'writing-task-wrap';
     div.innerHTML = `
-      <div class="writing-task-title">Task ${task.num} — ${task.num === 1 ? 'Visual Description (Graph / Chart / Map / Diagram)' : 'Essay (Argument / Opinion / Problem-Solution)'}</div>
-      <div class="writing-task-hint">${task.context} · Minimum ${task.minWords} words</div>
+      <div class="writing-task-title">Task ${task.num}</div>
+      <div class="writing-task-hint">${task.context} · Min ${task.minWords} words</div>
       <div class="part-settings" style="border:none;padding-top:0;">
         <div class="form-group">
-          <label>Time Taken (min)</label>
+          <label>Time (min)</label>
           <input type="number" id="write-t${task.num}-time" min="0" max="90"
-            value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" />
+            value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:80px;" />
         </div>
         <div class="form-group">
           <label>Band Score</label>
           <input type="number" id="write-t${task.num}-score" min="0" max="9" step="0.5"
-            value="${secData ? secData.score : ''}" placeholder="e.g. 6.5" />
+            value="${secData ? secData.score : ''}" placeholder="e.g. 6.5" style="width:80px;" />
         </div>
       </div>
       <div class="form-group">
-        <label>📌 My Answer / Key Points Written</label>
+        <label>My Answer</label>
         <textarea id="write-t${task.num}-my" rows="6"
-          placeholder="Type or paste your answer here…"
+          placeholder="Type your response here..."
           oninput="updateWordCount(this, 'wc-t${task.num}', ${task.minWords})"
         >${escapeHtml(myAnswer)}</textarea>
         <div class="word-count-display ${wordCnt >= task.minWords ? 'ok' : (wordCnt > 0 ? 'warn' : '')}"
-          id="wc-t${task.num}">${wordCnt} / ${task.minWords} words min</div>
+          id="wc-t${task.num}">${wordCnt} / ${task.minWords} words</div>
       </div>
       <div class="form-group">
-        <label>✅ Model / Expected Answer &amp; Examiner Notes</label>
+        <label>Model Answer / Correct Notes</label>
         <textarea id="write-t${task.num}-correct" rows="5"
-          placeholder="Model answer, approach, examiner feedback…"
+          placeholder="Expected answer details..."
         >${escapeHtml(correctAnswer)}</textarea>
       </div>
       <div class="form-group">
-        <label>📝 Personal Strategy Notes</label>
+        <label>Notes</label>
         <textarea id="write-t${task.num}-notes" rows="2"
-          placeholder="What to improve, vocabulary to remember…"
+          placeholder="Personal strategies..."
         >${secData ? escapeHtml(secData.notes) : ''}</textarea>
       </div>`;
     container.appendChild(div);
@@ -430,7 +426,7 @@ function updateWordCount(textarea, displayId, min) {
   const wc = countWords(textarea.value);
   const el = document.getElementById(displayId);
   if (!el) return;
-  el.textContent = `${wc} / ${min} words min`;
+  el.textContent = `${wc} / ${min} words`;
   el.className = `word-count-display ${wc >= min ? 'ok' : (wc > 0 ? 'warn' : '')}`;
 }
 
@@ -450,49 +446,49 @@ function buildSpeakingParts(existingData) {
     const div = document.createElement('div');
     div.className = 'speaking-part-wrap';
     div.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div>
-          <div style="font-size:14px;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">Part ${part.num}</div>
-          <div style="font-size:12px;color:var(--text-muted);font-weight:500;">${part.context}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Part ${part.num}</div>
+          <div style="font-size:11.5px;color:var(--text-secondary);">${part.context}</div>
         </div>
         <div class="flex gap-2 items-center" style="flex-wrap:wrap;">
-          <label style="text-transform:none;font-size:12px;margin:0;color:var(--text-muted);">Band:</label>
+          <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Band:</label>
           <input type="number" id="speak-p${part.num}-score" min="0" max="9" step="0.5"
             value="${secData ? secData.score : ''}" placeholder="—"
-            style="width:72px;text-align:center;" />
-          <label style="text-transform:none;font-size:12px;margin:0;color:var(--text-muted);">Time (min):</label>
+            style="width:50px;text-align:center;" />
+          <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Time (min):</label>
           <input type="number" id="speak-p${part.num}-time" min="0" max="20"
             value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0"
-            style="width:62px;text-align:center;" />
+            style="width:50px;text-align:center;" />
         </div>
       </div>
       ${part.num === 2 ? `
         <div class="cue-card-box">
-          <div style="font-size:10.5px;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.08em;">📋 CUE CARD TOPIC</div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Cue Card Topic</div>
           <textarea id="speak-p${part.num}-topic" rows="3"
-            placeholder="Write the cue card topic / task here…">${escapeHtml(topic)}</textarea>
+            placeholder="Cue card prompt details...">${escapeHtml(topic)}</textarea>
         </div>
       ` : `
         <div class="form-group">
           <label>Topic / Questions Asked</label>
           <textarea id="speak-p${part.num}-topic" rows="2"
-            placeholder="Write the topics or questions asked…">${escapeHtml(topic)}</textarea>
+            placeholder="Questions or topics...">${escapeHtml(topic)}</textarea>
         </div>
       `}
       <div class="form-group">
-        <label>🗣️ My Answer Notes</label>
+        <label>My Answer Notes</label>
         <textarea id="speak-p${part.num}-mynotes" rows="3"
-          placeholder="Key points spoken, vocabulary used, structure…">${escapeHtml(myNotes)}</textarea>
+          placeholder="Points spoken, outlines...">${escapeHtml(myNotes)}</textarea>
       </div>
       <div class="form-group">
-        <label>💡 Feedback &amp; Improvement Notes</label>
+        <label>Feedback &amp; Corrections</label>
         <textarea id="speak-p${part.num}-feedback" rows="2"
-          placeholder="Fluency issues, grammar mistakes, model phrases to use…">${escapeHtml(feedback)}</textarea>
+          placeholder="Grammar, vocabulary improvements...">${escapeHtml(feedback)}</textarea>
       </div>
       <div class="form-group">
-        <label>📝 General Notes</label>
+        <label>General Notes</label>
         <textarea id="speak-p${part.num}-notes" rows="2"
-          placeholder="Any other observations…">${secData ? escapeHtml(secData.notes) : ''}</textarea>
+          placeholder="General strategy notes...">${secData ? escapeHtml(secData.notes) : ''}</textarea>
       </div>`;
     container.appendChild(div);
   });
@@ -513,7 +509,7 @@ async function saveSection(sectionType) {
     else if (sectionType === 'Writing')   promises = IELTS.WRITING_TASKS.map(t => saveWritingTask(t.num));
     else if (sectionType === 'Speaking')  promises = IELTS.SPEAKING_PARTS.map(p => saveSpeakingPart(p.num));
     await Promise.all(promises);
-    Toast.success(`${sectionType} saved ✓`);
+    Toast.success(`${sectionType} successfully saved`);
     updateTally();
   } catch(e) {
     console.error(e);
@@ -524,7 +520,6 @@ async function saveSection(sectionType) {
 async function saveSectionPart(sectionType, partNum) {
   const prefix = sectionType === 'Listening' ? `listen-p${partNum}` : `read-p${partNum}`;
 
-  // Part-level question type
   const partQType = document.getElementById(`${prefix}-qtype`)?.value || '';
   const timeVal   = document.getElementById(`${prefix}-time`)?.value;
   const scoreVal  = document.getElementById(`${prefix}-score-inp`)?.value;
@@ -541,7 +536,6 @@ async function saveSectionPart(sectionType, partNum) {
     notes
   });
 
-  // Collect questions — use part-level qtype for all rows
   const tbody = document.getElementById(`${prefix}-body`);
   const rows  = tbody?.querySelectorAll('tr.q-row') || [];
   const questions = [];
@@ -553,7 +547,7 @@ async function saveSectionPart(sectionType, partNum) {
     const valMap = { '1': 1, '0': 0, '': null };
     questions.push({
       question_number: qnum,
-      question_type:   partQType,   // ← All questions in part share one type
+      question_type:   partQType,
       my_answer:       inputs[0]?.value || '',
       correct_answer:  inputs[1]?.value || '',
       is_correct:      valMap[toggle?.dataset.val ?? ''] ?? null,
@@ -640,13 +634,12 @@ async function loadSessionData() {
     const modeBadge = document.getElementById('test-mode-badge');
     if (test.mode === 'mock') {
       modeBadge.className = 'mode-badge badge-purple';
-      modeBadge.textContent = '🏁 Mock Test';
+      modeBadge.textContent = 'Mock Test';
     } else {
       modeBadge.className = 'mode-badge badge-blue';
-      modeBadge.textContent = '✏️ Practice';
+      modeBadge.textContent = 'Practice';
     }
 
-    // Load sections + their questions
     const sections = await api.get(`/api/tests/${TEST_ID}/sections`);
     const existBySection  = { Listening: [], Reading: [], Writing: [], Speaking: [] };
     const questionsBySecId = {};
@@ -664,7 +657,6 @@ async function loadSessionData() {
     buildWritingTasks(existData('Writing'));
     buildSpeakingParts(existData('Speaking'));
 
-    // Find book for breadcrumb
     const allBooks = await api.get('/api/books');
     for (const book of allBooks) {
       const bookTests = await api.get(`/api/books/${book.id}/tests`);
@@ -677,7 +669,6 @@ async function loadSessionData() {
       }
     }
 
-    // Populate edit modal
     document.getElementById('edit-test-num').value   = test.test_number;
     document.getElementById('edit-test-mode').value  = test.mode;
     document.getElementById('edit-test-date').value  = test.date;
@@ -706,7 +697,7 @@ document.getElementById('btn-update-test').addEventListener('click', async () =>
       notes:        document.getElementById('edit-test-notes').value
     });
     Modal.close('modal-edit-test');
-    Toast.success('Test updated!');
+    Toast.success('Test updated');
     loadSessionData();
   } catch(e) {
     Toast.error('Failed to update test');

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IELTS Prep — Book</title>
-  <meta name="description" content="View all tests in this IELTS book." />
+  <title>IELTS Prep — Book Tests</title>
+  <meta name="description" content="View test sessions within this IELTS book." />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
@@ -12,7 +12,6 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <a href="/" class="logo-mark">
-        <div class="logo-icon">🎯</div>
         <div>
           <div class="logo-text">IELTS Prep</div>
           <div class="logo-sub">Academic</div>
@@ -20,15 +19,12 @@
       </a>
     </div>
     <nav class="sidebar-nav">
-      <a href="/" class="nav-item" data-page="index"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
-      <a href="/progress.html" class="nav-item" data-page="progress"><span class="nav-icon">📊</span><span>Progress</span></a>
-      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon"></span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item" data-page="progress"><span class="nav-icon"></span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon"></span><span>Settings</span></a>
     </nav>
     <div class="sidebar-footer">
-      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
-        <span class="nav-icon theme-toggle-label">☀️</span>
-        <span>Toggle Theme</span>
-      </button>
+      <a href="https://forms.gle/sSuzFMHQmn37jxK16" target="_blank" class="nav-item" style="color: var(--accent); font-weight: 600;"><span class="nav-icon"></span><span>Feedback</span></a>
     </div>
   </aside>
 
@@ -42,24 +38,24 @@
         </div>
       </div>
       <div class="topbar-right">
-        <button class="btn btn-ghost btn-sm" id="btn-edit-book">✏️ Edit Book</button>
-        <button class="btn btn-danger btn-sm" id="btn-delete-book">🗑️ Delete Book</button>
-        <button class="btn btn-primary" id="btn-new-test">➕ New Test</button>
+        <button class="btn btn-ghost btn-sm" id="btn-edit-book">Edit Book</button>
+        <button class="btn btn-danger btn-sm" id="btn-delete-book">Delete Book</button>
+        <button class="btn btn-primary" id="btn-new-test">New Test</button>
       </div>
     </header>
 
     <main class="page-content">
       <div class="page-header">
-        <h1 class="page-title" id="book-title">Loading…</h1>
-        <div class="page-subtitle" id="book-subtitle"></div>
+        <h1 class="page-title" id="book-title">Book Title</h1>
+        <p class="page-subtitle" id="book-subtitle">Loading tests...</p>
       </div>
 
-      <div id="tests-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;" id="tests-list"></div>
+
       <div id="tests-empty" class="empty-state hidden">
-        <div class="empty-state-icon">📝</div>
-        <h3>No tests yet</h3>
-        <p>Add your first test from this book to start tracking your progress.</p>
-        <button class="btn btn-primary" onclick="Modal.open('modal-new-test')">➕ Add Test</button>
+        <h3>No practice tests yet</h3>
+        <p>Create your first practice or mock test session for this book.</p>
+        <button class="btn btn-primary" onclick="Modal.open('modal-new-test')">New Test</button>
       </div>
     </main>
   </div>
@@ -69,7 +65,7 @@
 <div class="modal-overlay" id="modal-new-test">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">📝 New Test</h3>
+      <h3 class="modal-title">New Test Session</h3>
       <button class="modal-close" onclick="Modal.close('modal-new-test')">✕</button>
     </div>
     <div class="form-row">
@@ -80,8 +76,8 @@
       <div class="form-group">
         <label for="test-mode">Mode</label>
         <select id="test-mode">
-          <option value="practice">✏️ Practice</option>
-          <option value="mock">🏁 Mock Test</option>
+          <option value="practice">Practice</option>
+          <option value="mock">Mock Test</option>
         </select>
       </div>
     </div>
@@ -104,11 +100,11 @@
 <div class="modal-overlay" id="modal-edit-book">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">✏️ Edit Book Name</h3>
+      <h3 class="modal-title">Edit Book Title</h3>
       <button class="modal-close" onclick="Modal.close('modal-edit-book')">✕</button>
     </div>
     <div class="form-group">
-      <label for="edit-book-name">Book Name</label>
+      <label for="edit-book-name">Book Title</label>
       <input type="text" id="edit-book-name" placeholder="e.g. Cambridge IELTS 18" />
     </div>
     <div class="modal-actions">

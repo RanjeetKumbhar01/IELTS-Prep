@@ -40,15 +40,14 @@ function renderBooks(books) {
     card.className = 'book-card animate-fade-in';
     card.innerHTML = `
       <div onclick="window.location.href='/book.html?id=${book.id}'" style="cursor:pointer;">
-        <div class="book-icon">📘</div>
         <div class="book-name">${escapeHtml(book.name)}</div>
         <div class="book-meta">${book.test_count} test${book.test_count !== 1 ? 's' : ''} · Added ${formatDate(book.created_at)}</div>
       </div>
-      <div style="margin-top:14px;display:flex;gap:7px;">
+      <div style="margin-top:10px;display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" style="flex:1;"
-          onclick="event.stopPropagation(); openEditBook(${book.id}, '${escapeJs(book.name)}')">✏️ Edit</button>
+          onclick="event.stopPropagation(); openEditBook(${book.id}, '${escapeJs(book.name)}')">Edit</button>
         <button class="btn btn-danger btn-sm" style="flex:1;"
-          onclick="event.stopPropagation(); deleteBook(${book.id})">🗑️ Delete</button>
+          onclick="event.stopPropagation(); deleteBook(${book.id})">Delete</button>
       </div>
     `;
     grid.appendChild(card);
@@ -73,16 +72,16 @@ function renderRecentTests(tests) {
       <div class="test-card-left">
         <div class="test-title">Test ${escapeHtml(t.test_number)}</div>
         <div class="test-meta">
-          <span>📘 ${escapeHtml(t.book_name)}</span>
+          <span>${escapeHtml(t.book_name)}</span>
           <span>·</span>
           <span>${formatDate(t.date)}</span>
           <span>·</span>
-          <span class="badge ${t.mode === 'mock' ? 'badge-purple' : 'badge-blue'}">${t.mode === 'mock' ? '🏁 Mock' : '✏️ Practice'}</span>
-          ${t.total_score ? `<span class="score-pill">Score: ${t.total_score}</span>` : ''}
+          <span class="badge ${t.mode === 'mock' ? 'badge-purple' : 'badge-blue'}">${t.mode === 'mock' ? 'Mock' : 'Practice'}</span>
+          ${t.total_score ? `<span class="score-pill">Band: ${t.total_score}</span>` : ''}
         </div>
       </div>
       <div class="test-card-actions">
-        <a href="/session.html?testId=${t.id}" class="btn btn-primary btn-sm">Open →</a>
+        <a href="/session.html?testId=${t.id}" class="btn btn-primary btn-sm">Open</a>
       </div>
     `;
     list.appendChild(div);
@@ -90,7 +89,7 @@ function renderRecentTests(tests) {
 }
 
 async function deleteBook(id) {
-  if (!confirm('Delete this book and ALL its tests? This cannot be undone.')) return;
+  if (!confirm('Delete this book and all its tests? This cannot be undone.')) return;
   try {
     await api.del(`/api/books/${id}`);
     Toast.success('Book deleted');
@@ -128,10 +127,10 @@ document.getElementById('btn-save-book').addEventListener('click', saveBook);
 
 async function saveBook() {
   const name = bookInput.value.trim();
-  if (!name) { Toast.error('Please enter a book name'); return; }
+  if (!name) { Toast.error('Please enter a book title'); return; }
   try {
     await api.post('/api/books', { name });
-    Toast.success(`"${name}" added!`);
+    Toast.success('Book added');
     bookInput.value = '';
     Modal.close('modal-add-book');
     loadDashboard();
@@ -146,7 +145,7 @@ document.getElementById('btn-save-edit-book-dash')?.addEventListener('click', as
   if (!name || !editingBookId) return;
   try {
     await api.put(`/api/books/${editingBookId}`, { name });
-    Toast.success('Book name updated!');
+    Toast.success('Book updated');
     Modal.close('modal-edit-book-dash');
     loadDashboard();
   } catch(e) {

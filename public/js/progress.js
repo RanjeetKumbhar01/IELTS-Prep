@@ -25,10 +25,10 @@ async function loadProgress() {
 function renderProgressChart(bySectionData) {
   const sections = ['Listening','Reading','Writing','Speaking'];
   const colors = {
-    Listening: '#3b82f6',
-    Reading:   '#10b981',
-    Writing:   '#f59e0b',
-    Speaking:  '#8b5cf6'
+    Listening: '#0284c7',
+    Reading:   '#059669',
+    Writing:   '#d97706',
+    Speaking:  '#7c3aed'
   };
 
   const datasets = sections.map(sec => {
@@ -39,11 +39,11 @@ function renderProgressChart(bySectionData) {
       label: sec,
       data: points,
       borderColor: colors[sec],
-      backgroundColor: colors[sec] + '22',
-      tension: 0.4,
+      backgroundColor: colors[sec] + '11',
+      tension: 0.25,
       fill: false,
-      pointRadius: 5,
-      pointHoverRadius: 8,
+      pointRadius: 4,
+      pointHoverRadius: 6,
       borderWidth: 2
     };
   });
@@ -62,7 +62,7 @@ function renderProgressChart(bySectionData) {
         legend: {
           display: true,
           position: 'top',
-          labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#aaa', usePointStyle: true }
+          labels: { color: '#475569', usePointStyle: true }
         },
         tooltip: {
           callbacks: {
@@ -73,13 +73,13 @@ function renderProgressChart(bySectionData) {
       scales: {
         x: {
           type: 'category',
-          ticks: { color: '#8da0c0' },
-          grid: { color: 'rgba(99,130,190,0.1)' }
+          ticks: { color: '#64748b' },
+          grid: { color: '#f1f5f9' }
         },
         y: {
           min: 0, max: 100,
-          ticks: { color: '#8da0c0', callback: v => v + '%' },
-          grid: { color: 'rgba(99,130,190,0.1)' }
+          ticks: { color: '#64748b', callback: v => v + '%' },
+          grid: { color: '#f1f5f9' }
         }
       }
     }
@@ -90,7 +90,7 @@ function renderProgressChart(bySectionData) {
 
 function renderAvgChart(bySectionData) {
   const sections = ['Listening','Reading','Writing','Speaking'];
-  const colors = ['#3b82f6','#10b981','#f59e0b','#8b5cf6'];
+  const colors = ['#0284c7','#059669','#d97706','#7c3aed'];
 
   const avgs = sections.map(sec => {
     const pts = bySectionData.filter(d => d.section_type === sec && d.max_score > 0);
@@ -104,13 +104,13 @@ function renderAvgChart(bySectionData) {
   avgChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: sections.map((s, i) => `${['🎧','📖','✍️','🗣️'][i]} ${s}`),
+      labels: sections,
       datasets: [{
         data: avgs,
-        backgroundColor: colors.map(c => c + 'aa'),
+        backgroundColor: colors.map(c => c + 'cc'),
         borderColor: colors,
-        borderWidth: 2,
-        borderRadius: 8
+        borderWidth: 1.5,
+        borderRadius: 4
       }]
     },
     options: {
@@ -118,11 +118,11 @@ function renderAvgChart(bySectionData) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#8da0c0' }, grid: { display: false } },
+        x: { ticks: { color: '#64748b' }, grid: { display: false } },
         y: {
           min: 0, max: 100,
-          ticks: { color: '#8da0c0', callback: v => v + '%' },
-          grid: { color: 'rgba(99,130,190,0.1)' }
+          ticks: { color: '#64748b', callback: v => v + '%' },
+          grid: { color: '#f1f5f9' }
         }
       }
     }
@@ -142,13 +142,13 @@ function renderQTypeAccuracy(qtypes) {
   }
   empty.classList.add('hidden');
 
-  qtypes.slice(0, 12).forEach(qt => {
+  qtypes.slice(0, 10).forEach(qt => {
     const pct = qt.total > 0 ? Math.round((qt.correct / qt.total) * 100) : 0;
     const color = pct >= 70 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
     const div = document.createElement('div');
     div.innerHTML = `
       <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;font-weight:500;color:var(--text-primary);">${escapeHtml(qt.question_type)}</span>
+        <span style="font-size:12px;font-weight:600;color:var(--text-primary);">${escapeHtml(qt.question_type)}</span>
         <span style="font-size:12px;font-weight:700;color:${color};">${pct}% (${qt.correct}/${qt.total})</span>
       </div>
       <div class="progress-bar-wrap">
@@ -183,13 +183,13 @@ function renderTestsTable(tests) {
       <td>${escapeHtml(test.book_name)}</td>
       <td style="font-weight:600;">Test ${escapeHtml(test.test_number)}</td>
       <td>${formatDate(test.date)}</td>
-      <td><span class="badge ${test.mode === 'mock' ? 'badge-purple' : 'badge-blue'}">${test.mode === 'mock' ? '🏁 Mock' : '✏️ Practice'}</span></td>
-      <td id="trow-${test.id}-L" style="color:#3b82f6;">—</td>
-      <td id="trow-${test.id}-R" style="color:#10b981;">—</td>
-      <td id="trow-${test.id}-W" style="color:#f59e0b;">—</td>
-      <td id="trow-${test.id}-S" style="color:#8b5cf6;">—</td>
+      <td><span class="badge ${test.mode === 'mock' ? 'badge-purple' : 'badge-blue'}">${test.mode === 'mock' ? 'Mock' : 'Practice'}</span></td>
+      <td id="trow-${test.id}-L" style="color:var(--listening-color);">—</td>
+      <td id="trow-${test.id}-R" style="color:var(--reading-color);">—</td>
+      <td id="trow-${test.id}-W" style="color:var(--writing-color);">—</td>
+      <td id="trow-${test.id}-S" style="color:var(--speaking-color);">—</td>
       <td>${test.total_score !== null ? `<span class="score-pill">${test.total_score}</span>` : '—'}</td>
-      <td><a href="/session.html?testId=${test.id}" class="btn btn-ghost btn-sm">Open →</a></td>
+      <td><a href="/session.html?testId=${test.id}" class="btn btn-ghost btn-sm">Open</a></td>
     `;
     tbody.appendChild(tr);
   });

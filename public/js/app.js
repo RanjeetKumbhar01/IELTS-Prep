@@ -1,27 +1,4 @@
-/* ── Shared app utilities, API layer, theme management ── */
-
-// ─── Theme ───────────────────────────────────────────────────────────────
-
-const Theme = {
-  init() {
-    const saved = localStorage.getItem('ielts-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
-    this.updateToggles();
-  },
-  toggle() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('ielts-theme', next);
-    this.updateToggles();
-  },
-  updateToggles() {
-    const theme = document.documentElement.getAttribute('data-theme');
-    document.querySelectorAll('.theme-toggle-label').forEach(el => {
-      el.textContent = theme === 'dark' ? '☀️' : '🌙';
-    });
-  }
-};
+/* ── Shared app utilities, API layer, layout config ── */
 
 // ─── API Helper ───────────────────────────────────────────────────────────
 
@@ -97,12 +74,11 @@ const Toast = {
   },
   show(msg, type = 'info') {
     if (!this.container) this.init();
-    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
     const t = document.createElement('div');
     t.className = `toast ${type}`;
-    t.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+    t.innerHTML = `<span>${msg}</span>`;
     this.container.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
+    setTimeout(() => t.remove(), 2500);
   },
   success(msg) { this.show(msg, 'success'); },
   error(msg)   { this.show(msg, 'error'); },
@@ -160,13 +136,12 @@ function getScoreColor(pct) {
 }
 
 function getSectionColor(section) {
-  const map = { Listening: '#3b82f6', Reading: '#10b981', Writing: '#f59e0b', Speaking: '#8b5cf6' };
+  const map = { Listening: '#0284c7', Reading: '#059669', Writing: '#d97706', Speaking: '#7c3aed' };
   return map[section] || 'var(--accent)';
 }
 
 function getSectionIcon(section) {
-  const map = { Listening: '🎧', Reading: '📖', Writing: '✍️', Speaking: '🗣️' };
-  return map[section] || '📋';
+  return ''; // Emojis removed for professional theme
 }
 
 function getParams() {
@@ -249,74 +224,63 @@ const CookieConsent = {
     const banner = document.createElement('div');
     banner.style.cssText = `
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      max-width: 380px;
-      background: rgba(30, 41, 59, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-left: 4px solid var(--accent, #6366f1);
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-      color: #f1f5f9;
+      bottom: 20px;
+      right: 20px;
+      max-width: 340px;
+      background: #ffffff;
+      border: 1px solid var(--border-strong, #cbd5e1);
+      border-left: 3px solid var(--accent, #2563eb);
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      color: var(--text-secondary);
       font-family: inherit;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.5;
       z-index: 99999;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      transform: translateY(100px);
+      gap: 8px;
+      transform: translateY(50px);
       opacity: 0;
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s ease;
     `;
 
     banner.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;">🎯</span>
-        <strong style="font-weight:600;color:#fff;">Private Guest Workspace</strong>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <strong style="font-weight:600;color:var(--text-primary);">Private Guest Workspace</strong>
       </div>
       <div>
-        We use cookie storage to automatically create a private space for your IELTS tests. No signup required, your data remains separate from others.
+        This app uses a private local session to store your IELTS tests. All data is kept locally or securely connected to your personal cloud deployment.
       </div>
       <div style="display:flex;justify-content:flex-end;">
         <button id="cookie-got-it" style="
-          background: var(--accent, #6366f1);
+          background: var(--accent, #2563eb);
           color: white;
           border: none;
-          padding: 6px 16px;
-          border-radius: 6px;
+          padding: 4px 10px;
+          border-radius: 4px;
           font-weight: 600;
-          font-size: 12px;
+          font-size: 11px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s;
         ">Got it</button>
       </div>
     `;
 
     document.body.appendChild(banner);
 
-    // Trigger animation
     setTimeout(() => {
       banner.style.transform = 'translateY(0)';
       banner.style.opacity = '1';
     }, 100);
 
     const btn = banner.querySelector('#cookie-got-it');
-    btn.style.backgroundColor = 'var(--accent, #6366f1)';
-    btn.addEventListener('mouseenter', () => {
-      btn.style.filter = 'brightness(1.1)';
-    });
-    btn.addEventListener('mouseleave', () => {
-      btn.style.filter = 'none';
-    });
     btn.addEventListener('click', () => {
-      banner.style.transform = 'translateY(50px)';
+      banner.style.transform = 'translateY(20px)';
       banner.style.opacity = '0';
       localStorage.setItem('ielts_cookie_dismissed', 'true');
-      setTimeout(() => banner.remove(), 500);
+      setTimeout(() => banner.remove(), 300);
     });
   }
 };
@@ -324,13 +288,7 @@ const CookieConsent = {
 // ─── Init ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  Theme.init();
   Toast.init();
   setActiveNav();
   CookieConsent.init();
-
-  // Theme toggle buttons
-  document.querySelectorAll('.theme-toggle-btn, [data-action="toggle-theme"]').forEach(el => {
-    el.addEventListener('click', () => Theme.toggle());
-  });
 });

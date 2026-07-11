@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IELTS Prep — Progress & Analytics</title>
-  <meta name="description" content="Track your IELTS score progress across all sections and question types." />
+  <title>IELTS Prep — Progress Analytics</title>
+  <meta name="description" content="Review your IELTS score trends and analysis." />
   <link rel="stylesheet" href="/css/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <!-- Chart.js for beautiful charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-logo">
       <a href="/" class="logo-mark">
-        <div class="logo-icon">🎯</div>
         <div>
           <div class="logo-text">IELTS Prep</div>
           <div class="logo-sub">Academic</div>
@@ -21,15 +21,12 @@
       </a>
     </div>
     <nav class="sidebar-nav">
-      <a href="/" class="nav-item" data-page="index"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
-      <a href="/progress.html" class="nav-item active" data-page="progress"><span class="nav-icon">📊</span><span>Progress</span></a>
-      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon"></span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item active" data-page="progress"><span class="nav-icon"></span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon"></span><span>Settings</span></a>
     </nav>
     <div class="sidebar-footer">
-      <button class="nav-item theme-toggle-btn" data-action="toggle-theme" style="width:100%;">
-        <span class="nav-icon theme-toggle-label">☀️</span>
-        <span>Toggle Theme</span>
-      </button>
+      <a href="https://forms.gle/sSuzFMHQmn37jxK16" target="_blank" class="nav-item" style="color: var(--accent); font-weight: 600;"><span class="nav-icon"></span><span>Feedback</span></a>
     </div>
   </aside>
 
@@ -39,84 +36,87 @@
         <div class="breadcrumb">
           <a href="/">Dashboard</a>
           <span class="sep">›</span>
-          <span class="current">Progress & Analytics</span>
+          <span class="current">Progress</span>
         </div>
       </div>
     </header>
 
     <main class="page-content">
       <div class="page-header">
-        <h1 class="page-title">📊 Progress & Analytics</h1>
-        <p class="page-subtitle">Track your improvement across all IELTS sections over time</p>
-      </div>
-
-      <!-- Section Score Progress -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <div class="card-title">Section Score Progress Over Time</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="chart-legend"></div>
-        </div>
-        <div class="chart-wrap chart-wrap-tall">
-          <canvas id="chart-progress"></canvas>
-        </div>
+        <h1 class="page-title">Performance Analytics</h1>
+        <p class="page-subtitle">Analyze your strengths, score progress, and question-type accuracy.</p>
       </div>
 
       <div class="grid-2 mb-4">
-        <!-- Question Type Accuracy -->
+        <!-- Progress Over Time Line Chart -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Question Type Accuracy</div>
+            <h3 class="card-title">Score Trends Over Time</h3>
           </div>
-          <div id="qtype-list" style="display:flex;flex-direction:column;gap:10px;"></div>
-          <div id="qtype-empty" class="text-muted text-sm mt-2 hidden">No question data yet.</div>
+          <div class="chart-wrap-tall">
+            <canvas id="chart-progress"></canvas>
+          </div>
         </div>
 
         <!-- Section Averages -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Average Section Scores</div>
+            <h3 class="card-title">Average Score by Section</h3>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap-tall">
             <canvas id="chart-avg"></canvas>
           </div>
         </div>
       </div>
 
-      <!-- Test History Table -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">All Tests</div>
-          <div style="display:flex;gap:8px;">
-            <select id="filter-mode" style="font-size:12px;padding:5px 10px;width:auto;">
-              <option value="">All Modes</option>
-              <option value="practice">Practice</option>
-              <option value="mock">Mock</option>
-            </select>
+      <div class="grid-2">
+        <!-- Question Type Accuracy -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Question Type Accuracy</h3>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;" id="qtype-list"></div>
+          <div id="qtype-empty" class="empty-state hidden">
+            <h3>No data available</h3>
+            <p>Answer questions in Listening or Reading sessions to build accuracy metrics.</p>
           </div>
         </div>
-        <div style="overflow-x:auto;">
-          <table class="analytics-table">
-            <thead>
-              <tr>
-                <th>Book</th>
-                <th>Test</th>
-                <th>Date</th>
-                <th>Mode</th>
-                <th>Listening</th>
-                <th>Reading</th>
-                <th>Writing</th>
-                <th>Speaking</th>
-                <th>Band</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="tests-table-body"></tbody>
-          </table>
-        </div>
-        <div id="tests-table-empty" class="empty-state hidden" style="padding:30px;">
-          <div class="empty-state-icon">📝</div>
-          <h3>No tests yet</h3>
-          <p>Complete your first test session to see it here.</p>
+
+        <!-- History Table -->
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+            <h3 class="card-title">Test Session History</h3>
+            <div style="display:flex;gap:8px;">
+              <select id="filter-mode" style="padding:4px 8px;font-size:12px;width:120px;">
+                <option value="">All Modes</option>
+                <option value="practice">Practice Only</option>
+                <option value="mock">Mocks Only</option>
+              </select>
+            </div>
+          </div>
+          <div style="flex:1;overflow-x:auto;">
+            <table class="analytics-table">
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Test</th>
+                  <th>Date</th>
+                  <th>Mode</th>
+                  <th>Listening</th>
+                  <th>Reading</th>
+                  <th>Writing</th>
+                  <th>Speaking</th>
+                  <th>Band</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tests-table-body"></tbody>
+            </table>
+            <div id="tests-table-empty" class="empty-state hidden">
+              <h3>No tests found</h3>
+              <p>Practice tests matching the filter will display here.</p>
+            </div>
+          </div>
         </div>
       </div>
     </main>
