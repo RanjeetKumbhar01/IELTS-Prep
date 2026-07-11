@@ -21,6 +21,7 @@ async function getDb() {
       CREATE TABLE IF NOT EXISTS books (
         id         SERIAL PRIMARY KEY,
         name       TEXT NOT NULL,
+        user_id    TEXT NOT NULL DEFAULT 'default',
         created_at TEXT NOT NULL DEFAULT to_char(CURRENT_TIMESTAMP, 'YYYY-MM-DD"T"HH24:MI:SS')
       );
 
@@ -59,6 +60,14 @@ async function getDb() {
         word_count      INTEGER DEFAULT 0
       );
     `);
+
+    // Migration: Add user_id column if it doesn't exist
+    try {
+      await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT 'default';`);
+      console.log('⚡ Postgres Migration: Ensure user_id column exists on books');
+    } catch (e) {
+      console.log('⚡ Postgres Migration Note:', e.message);
+    }
 
     // Helper to convert SQLite ? queries to Postgres $1, $2 queries
     function translateSql(sql) {
@@ -106,6 +115,7 @@ async function getDb() {
       CREATE TABLE IF NOT EXISTS books (
         id         INTEGER PRIMARY KEY AUTOINCREMENT,
         name       TEXT NOT NULL,
+        user_id    TEXT NOT NULL DEFAULT 'default',
         created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
       );
 
@@ -144,6 +154,14 @@ async function getDb() {
         word_count      INTEGER DEFAULT 0
       );
     `);
+
+    // Migration: Add user_id column if it doesn't exist
+    try {
+      db.run("ALTER TABLE books ADD COLUMN user_id TEXT DEFAULT 'default'");
+      console.log('💾 SQLite Migration: Ensure user_id column exists on books');
+    } catch (e) {
+      // Column already exists, ignore
+    }
 
     function save() {
       const data = db.export();

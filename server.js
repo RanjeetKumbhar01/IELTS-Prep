@@ -7,16 +7,31 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── DB Init (async) ──────────────────────────────────────────────────────
+// ─── DB Init (async & serverless safe) ─────────────────────────────────────
 
-let db;
-require('./database').then(d => {
+let db = null;
+const dbPromise = require('./database').then(d => {
   db = d;
   console.log('✅ Database ready');
-  startServer();
+  return d;
 }).catch(err => {
   console.error('❌ DB init failed:', err);
   process.exit(1);
+});
+
+// Middleware to ensure database is ready and to extract user_id from headers
+app.use(async (req, res, next) => {
+  if (!db) {
+    try {
+      db = await dbPromise;
+    } catch (err) {
+      return res.status(500).json({ error: 'Database failed to initialize: ' + err.message });
+    }
+  }
+  
+  // Extract user_id from header (default to 'default')
+  req.userId = req.headers['x-user-id'] || 'default';
+  next();
 });
 
 // ─── ROUTES ───────────────────────────────────────────────────────────────
@@ -31,8 +46,9 @@ function registerRoutes() {
         SELECT b.id, b.name, b.created_at,
           (SELECT COUNT(*) FROM tests t WHERE t.book_id = b.id) as test_count
         FROM books b
+        WHERE b.user_id = ?
         ORDER BY b.id DESC
-      `);
+      `, [req.userId]);
       res.json(books);
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
@@ -42,8 +58,8 @@ function registerRoutes() {
       const { name } = req.body;
       if (!name || !name.trim()) return res.status(400).json({ error: 'Book name required' });
       const now = new Date().toLocaleString('sv').replace(' ','T');
-      const result = await db.run('INSERT INTO books (name, created_at) VALUES (?, ?)', [name.trim(), now]);
-      const book = await db.get('SELECT * FROM books WHERE id = ?', [result.lastInsertRowid]);
+      const result = await db.run('INSERT INTO books (name, created_at, user_id) VALUES (?, ?, ?)', [name.trim(), now, req.userId]);
+      const book = await db.get('SELECT * FROM books WHERE id = ? AND user_id = ?', [result.lastInsertRowid, req.userId]);
       res.json(book);
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
@@ -51,22 +67,33 @@ function registerRoutes() {
   app.put('/api/books/:id', async (req, res) => {
     try {
       const { name } = req.body;
-      await db.run('UPDATE books SET name = ? WHERE id = ?', [name.trim(), req.params.id]);
+      await db.run('UPDATE books SET name = ? WHERE id = ? AND user_id = ?', [name.trim(), req.params.id, req.userId]);
       res.json({ success: true });
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
 
   app.delete('/api/books/:id', async (req, res) => {
     try {
-      // Cascade manually
-      const tests = await db.all('SELECT id FROM tests WHERE book_id = ?', [req.params.id]);
-      for (const t of tests) {
-        const sections = await db.all('SELECT id FROM sections WHERE test_id = ?', [t.id]);
-        for (const s of sections) {
-          await db.run('DELETE FROM questions WHERE section_id = ?', [s.id]);
-        }
-        await db.run('DELETE FROM sections WHERE test_id = ?', [t.id]);
-      }
+      const book = await db.get('SELECT id FROM books WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+      if (!book) return res.status(403).json({ error: 'Unauthorized' });
+
+      // Cascade manually inside database queries
+      await db.run(`
+        DELETE FROM questions 
+        WHERE section_id IN (
+          SELECT s.id FROM sections s 
+          JOIN tests t ON t.id = s.test_id 
+          WHERE t.book_id = ?
+        )
+      `, [req.params.id]);
+
+      await db.run(`
+        DELETE FROM sections 
+        WHERE test_id IN (
+          SELECT id FROM tests WHERE book_id = ?
+        )
+      `, [req.params.id]);
+
       await db.run('DELETE FROM tests WHERE book_id = ?', [req.params.id]);
       await db.run('DELETE FROM books WHERE id = ?', [req.params.id]);
       res.json({ success: true });
@@ -77,6 +104,10 @@ function registerRoutes() {
 
   app.get('/api/books/:bookId/tests', async (req, res) => {
     try {
+      // Verify book ownership
+      const book = await db.get('SELECT id FROM books WHERE id = ? AND user_id = ?', [req.params.bookId, req.userId]);
+      if (!book) return res.status(403).json({ error: 'Unauthorized' });
+
       const tests = await db.all(`
         SELECT t.*, 
           (SELECT COUNT(*) FROM sections s WHERE s.test_id = t.id) as section_count
@@ -90,7 +121,11 @@ function registerRoutes() {
 
   app.get('/api/tests/:id', async (req, res) => {
     try {
-      const test = await db.get('SELECT * FROM tests WHERE id = ?', [req.params.id]);
+      const test = await db.get(`
+        SELECT t.* FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE t.id = ? AND b.user_id = ?
+      `, [req.params.id, req.userId]);
       if (!test) return res.status(404).json({ error: 'Test not found' });
       res.json(test);
     } catch(e) { res.status(500).json({ error: e.message }); }
@@ -98,6 +133,10 @@ function registerRoutes() {
 
   app.post('/api/books/:bookId/tests', async (req, res) => {
     try {
+      // Verify book ownership
+      const book = await db.get('SELECT id FROM books WHERE id = ? AND user_id = ?', [req.params.bookId, req.userId]);
+      if (!book) return res.status(403).json({ error: 'Unauthorized' });
+
       const { test_number, mode, date, notes } = req.body;
       const now = new Date().toLocaleString('sv').replace(' ','T');
       const d = date || new Date().toISOString().split('T')[0];
@@ -112,6 +151,14 @@ function registerRoutes() {
 
   app.put('/api/tests/:id', async (req, res) => {
     try {
+      // Verify test ownership
+      const test = await db.get(`
+        SELECT t.id FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE t.id = ? AND b.user_id = ?
+      `, [req.params.id, req.userId]);
+      if (!test) return res.status(403).json({ error: 'Unauthorized' });
+
       const { test_number, mode, date, total_score, notes } = req.body;
       await db.run(
         'UPDATE tests SET test_number=?, mode=?, date=?, total_score=?, notes=? WHERE id=?',
@@ -123,10 +170,15 @@ function registerRoutes() {
 
   app.delete('/api/tests/:id', async (req, res) => {
     try {
-      const sections = await db.all('SELECT id FROM sections WHERE test_id = ?', [req.params.id]);
-      for (const s of sections) {
-        await db.run('DELETE FROM questions WHERE section_id = ?', [s.id]);
-      }
+      // Verify test ownership
+      const test = await db.get(`
+        SELECT t.id FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE t.id = ? AND b.user_id = ?
+      `, [req.params.id, req.userId]);
+      if (!test) return res.status(403).json({ error: 'Unauthorized' });
+
+      await db.run('DELETE FROM questions WHERE section_id IN (SELECT id FROM sections WHERE test_id = ?)', [req.params.id]);
       await db.run('DELETE FROM sections WHERE test_id = ?', [req.params.id]);
       await db.run('DELETE FROM tests WHERE id = ?', [req.params.id]);
       res.json({ success: true });
@@ -137,6 +189,14 @@ function registerRoutes() {
 
   app.get('/api/tests/:testId/sections', async (req, res) => {
     try {
+      // Verify test ownership
+      const test = await db.get(`
+        SELECT t.id FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE t.id = ? AND b.user_id = ?
+      `, [req.params.testId, req.userId]);
+      if (!test) return res.status(403).json({ error: 'Unauthorized' });
+
       const sections = await db.all(`
         SELECT s.*,
           (SELECT COUNT(*) FROM questions q WHERE q.section_id = s.id) as question_count,
@@ -150,6 +210,14 @@ function registerRoutes() {
 
   app.post('/api/tests/:testId/sections', async (req, res) => {
     try {
+      // Verify test ownership
+      const test = await db.get(`
+        SELECT t.id FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE t.id = ? AND b.user_id = ?
+      `, [req.params.testId, req.userId]);
+      if (!test) return res.status(403).json({ error: 'Unauthorized' });
+
       const { section_type, part_number, time_taken_seconds, score, max_score, notes } = req.body;
       const pn = part_number || 1;
 
@@ -183,6 +251,15 @@ function registerRoutes() {
 
   app.get('/api/sections/:sectionId/questions', async (req, res) => {
     try {
+      // Verify section ownership
+      const sec = await db.get(`
+        SELECT s.id FROM sections s 
+        JOIN tests t ON t.id = s.test_id 
+        JOIN books b ON b.id = t.book_id 
+        WHERE s.id = ? AND b.user_id = ?
+      `, [req.params.sectionId, req.userId]);
+      if (!sec) return res.status(403).json({ error: 'Unauthorized' });
+
       const questions = await db.all(
         'SELECT * FROM questions WHERE section_id = ? ORDER BY question_number',
         [req.params.sectionId]
@@ -193,6 +270,15 @@ function registerRoutes() {
 
   app.post('/api/sections/:sectionId/questions/bulk', async (req, res) => {
     try {
+      // Verify section ownership
+      const sec = await db.get(`
+        SELECT s.id FROM sections s 
+        JOIN tests t ON t.id = s.test_id 
+        JOIN books b ON b.id = t.book_id 
+        WHERE s.id = ? AND b.user_id = ?
+      `, [req.params.sectionId, req.userId]);
+      if (!sec) return res.status(403).json({ error: 'Unauthorized' });
+
       const { questions } = req.body;
       if (!Array.isArray(questions)) return res.status(400).json({ error: 'questions must be array' });
 
@@ -222,20 +308,32 @@ function registerRoutes() {
 
   app.get('/api/analytics/overview', async (req, res) => {
     try {
-      const totalTests = (await db.get('SELECT COUNT(*) as count FROM tests')) || { count: 0 };
-      const totalBooks = (await db.get('SELECT COUNT(*) as count FROM books')) || { count: 0 };
+      const totalTests = (await db.get(`
+        SELECT COUNT(*) as count FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE b.user_id = ?
+      `, [req.userId])) || { count: 0 };
+
+      const totalBooks = (await db.get('SELECT COUNT(*) as count FROM books WHERE user_id = ?', [req.userId])) || { count: 0 };
+
       const avgScores = await db.all(`
-        SELECT section_type, 
-          AVG(CASE WHEN max_score > 0 THEN (CAST(score AS REAL) * 100.0 / max_score) ELSE NULL END) as avg_pct,
-          AVG(score) as avg_score
-        FROM sections
-        GROUP BY section_type
-      `);
+        SELECT s.section_type, 
+          AVG(CASE WHEN s.max_score > 0 THEN (CAST(s.score AS REAL) * 100.0 / s.max_score) ELSE NULL END) as avg_pct,
+          AVG(s.score) as avg_score
+        FROM sections s
+        JOIN tests t ON t.id = s.test_id
+        JOIN books b ON b.id = t.book_id
+        WHERE b.user_id = ?
+        GROUP BY s.section_type
+      `, [req.userId]);
+
       const recentTests = await db.all(`
         SELECT t.*, b.name as book_name 
         FROM tests t JOIN books b ON b.id = t.book_id
+        WHERE b.user_id = ?
         ORDER BY t.id DESC LIMIT 5
-      `);
+      `, [req.userId]);
+
       res.json({
         totalTests: totalTests.count,
         totalBooks: totalBooks.count,
@@ -254,17 +352,23 @@ function registerRoutes() {
         FROM sections s
         JOIN tests t ON t.id = s.test_id
         JOIN books b ON b.id = t.book_id
+        WHERE b.user_id = ?
         ORDER BY t.date ASC
-      `);
+      `, [req.userId]);
+
       const byQuestionType = await db.all(`
         SELECT q.question_type,
           COUNT(*) as total,
           SUM(CASE WHEN q.is_correct = 1 THEN 1 ELSE 0 END) as correct
         FROM questions q
-        WHERE q.question_type != '' AND q.is_correct IS NOT NULL
+        JOIN sections s ON s.id = q.section_id
+        JOIN tests t ON t.id = s.test_id
+        JOIN books b ON b.id = t.book_id
+        WHERE b.user_id = ? AND q.question_type != '' AND q.is_correct IS NOT NULL
         GROUP BY q.question_type
         ORDER BY total DESC
-      `);
+      `, [req.userId]);
+
       res.json({ bySection, byQuestionType });
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
@@ -275,8 +379,9 @@ function registerRoutes() {
         SELECT t.*, b.name as book_name,
           (SELECT COUNT(*) FROM sections s WHERE s.test_id = t.id) as section_count
         FROM tests t JOIN books b ON b.id = t.book_id
+        WHERE b.user_id = ?
         ORDER BY t.date DESC
-      `);
+      `, [req.userId]);
       res.json(tests);
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
@@ -285,10 +390,29 @@ function registerRoutes() {
 
   app.get('/api/backup', async (req, res) => {
     try {
-      const books     = await db.all('SELECT * FROM books');
-      const tests     = await db.all('SELECT * FROM tests');
-      const sections  = await db.all('SELECT * FROM sections');
-      const questions = await db.all('SELECT * FROM questions');
+      const books = await db.all('SELECT * FROM books WHERE user_id = ?', [req.userId]);
+      
+      const tests = await db.all(`
+        SELECT t.* FROM tests t 
+        JOIN books b ON b.id = t.book_id 
+        WHERE b.user_id = ?
+      `, [req.userId]);
+      
+      const sections = await db.all(`
+        SELECT s.* FROM sections s 
+        JOIN tests t ON t.id = s.test_id 
+        JOIN books b ON b.id = t.book_id 
+        WHERE b.user_id = ?
+      `, [req.userId]);
+      
+      const questions = await db.all(`
+        SELECT q.* FROM questions q 
+        JOIN sections s ON s.id = q.section_id 
+        JOIN tests t ON t.id = s.test_id 
+        JOIN books b ON b.id = t.book_id 
+        WHERE b.user_id = ?
+      `, [req.userId]);
+
       res.json({ exported_at: new Date().toISOString(), books, tests, sections, questions });
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
@@ -296,12 +420,35 @@ function registerRoutes() {
   app.post('/api/restore', async (req, res) => {
     try {
       const { books = [], tests = [], sections = [], questions = [] } = req.body;
-      await db.run('DELETE FROM questions');
-      await db.run('DELETE FROM sections');
-      await db.run('DELETE FROM tests');
-      await db.run('DELETE FROM books');
+      
+      // Delete existing data for this user
+      await db.run(`
+        DELETE FROM questions 
+        WHERE section_id IN (
+          SELECT s.id FROM sections s 
+          JOIN tests t ON t.id = s.test_id 
+          WHERE t.book_id IN (SELECT id FROM books WHERE user_id = ?)
+        )
+      `, [req.userId]);
+
+      await db.run(`
+        DELETE FROM sections 
+        WHERE test_id IN (
+          SELECT id FROM tests 
+          WHERE book_id IN (SELECT id FROM books WHERE user_id = ?)
+        )
+      `, [req.userId]);
+
+      await db.run(`
+        DELETE FROM tests 
+        WHERE book_id IN (SELECT id FROM books WHERE user_id = ?)
+      `, [req.userId]);
+
+      await db.run('DELETE FROM books WHERE user_id = ?', [req.userId]);
+
+      // Restore books (force user_id to current user)
       for (const b of books) {
-        await db.run('INSERT INTO books (id, name, created_at) VALUES (?,?,?)', [b.id, b.name, b.created_at]);
+        await db.run('INSERT INTO books (id, name, created_at, user_id) VALUES (?,?,?,?)', [b.id, b.name, b.created_at, req.userId]);
       }
       for (const t of tests) {
         await db.run('INSERT INTO tests (id, book_id, test_number, mode, date, total_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?)',
@@ -315,18 +462,37 @@ function registerRoutes() {
         await db.run('INSERT INTO questions (id, section_id, question_number, question_type, my_answer, correct_answer, is_correct, personal_note, word_count) VALUES (?,?,?,?,?,?,?,?,?)',
           [q.id, q.section_id, q.question_number, q.question_type, q.my_answer, q.correct_answer, q.is_correct, q.personal_note, q.word_count||0]);
       }
+
+      // Sync Postgres sequences to avoid serial ID collision after insert
+      const isPostgres = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
+      if (isPostgres && db._db) {
+        console.log('⚡ Syncing Postgres serial sequences after restore...');
+        try {
+          await db._db.query("SELECT setval(pg_get_serial_sequence('books', 'id'), coalesce(max(id), 1)) FROM books;");
+          await db._db.query("SELECT setval(pg_get_serial_sequence('tests', 'id'), coalesce(max(id), 1)) FROM tests;");
+          await db._db.query("SELECT setval(pg_get_serial_sequence('sections', 'id'), coalesce(max(id), 1)) FROM sections;");
+          await db._db.query("SELECT setval(pg_get_serial_sequence('questions', 'id'), coalesce(max(id), 1)) FROM questions;");
+          console.log('✅ Sequences synced successfully');
+        } catch(seqErr) {
+          console.error('❌ Failed to sync Postgres sequences:', seqErr.message);
+        }
+      }
+
       db.save();
       res.json({ success: true });
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
 }
 
-// ─── Start Server ─────────────────────────────────────────────────────────
+// ─── Start Server (Locally Only) ─────────────────────────────────────────
 
-function startServer() {
-  registerRoutes();
-  app.listen(PORT, () => {
-    console.log(`\n🎯 IELTS Prep is running at http://localhost:${PORT}\n`);
+registerRoutes();
+
+if (!process.env.VERCEL) {
+  dbPromise.then(() => {
+    app.listen(PORT, () => {
+      console.log(`\n🎯 IELTS Prep is running at http://localhost:${PORT}\n`);
+    });
   });
 }
 

@@ -26,15 +26,38 @@ const Theme = {
 // ─── API Helper ───────────────────────────────────────────────────────────
 
 const api = {
+  getUserId() {
+    let userId = localStorage.getItem('ielts_prep_user_id');
+    if (!userId) {
+      const match = document.cookie.match(/(?:^|; )ielts_prep_user_id=([^;]*)/);
+      if (match) {
+        userId = match[1];
+      } else {
+        userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      }
+      localStorage.setItem('ielts_prep_user_id', userId);
+    }
+    // Sync to cookie with 1 year expiration
+    document.cookie = `ielts_prep_user_id=${userId}; path=/; max-age=31536000; SameSite=Lax`;
+    return userId;
+  },
+  getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'x-user-id': this.getUserId()
+    };
+  },
   async get(url) {
-    const r = await fetch(url);
+    const r = await fetch(url, {
+      headers: { 'x-user-id': this.getUserId() }
+    });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
   async post(url, body) {
     const r = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify(body)
     });
     if (!r.ok) throw new Error(await r.text());
@@ -43,14 +66,17 @@ const api = {
   async put(url, body) {
     const r = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders(),
       body: JSON.stringify(body)
     });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
   async del(url) {
-    const r = await fetch(url, { method: 'DELETE' });
+    const r = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'x-user-id': this.getUserId() }
+    });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   }
@@ -213,12 +239,95 @@ const IELTS = {
   }
 };
 
+// ─── Cookie Consent Banner ────────────────────────────────────────────────
+
+const CookieConsent = {
+  init() {
+    const dismissed = localStorage.getItem('ielts_cookie_dismissed');
+    if (dismissed) return;
+
+    const banner = document.createElement('div');
+    banner.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      max-width: 380px;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--accent, #6366f1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      color: #f1f5f9;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    `;
+
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">🎯</span>
+        <strong style="font-weight:600;color:#fff;">Private Guest Workspace</strong>
+      </div>
+      <div>
+        We use cookie storage to automatically create a private space for your IELTS tests. No signup required, your data remains separate from others.
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button id="cookie-got-it" style="
+          background: var(--accent, #6366f1);
+          color: white;
+          border: none;
+          padding: 6px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">Got it</button>
+      </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    // Trigger animation
+    setTimeout(() => {
+      banner.style.transform = 'translateY(0)';
+      banner.style.opacity = '1';
+    }, 100);
+
+    const btn = banner.querySelector('#cookie-got-it');
+    btn.style.backgroundColor = 'var(--accent, #6366f1)';
+    btn.addEventListener('mouseenter', () => {
+      btn.style.filter = 'brightness(1.1)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.filter = 'none';
+    });
+    btn.addEventListener('click', () => {
+      banner.style.transform = 'translateY(50px)';
+      banner.style.opacity = '0';
+      localStorage.setItem('ielts_cookie_dismissed', 'true');
+      setTimeout(() => banner.remove(), 500);
+    });
+  }
+};
+
 // ─── Init ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   Theme.init();
   Toast.init();
   setActiveNav();
+  CookieConsent.init();
 
   // Theme toggle buttons
   document.querySelectorAll('.theme-toggle-btn, [data-action="toggle-theme"]').forEach(el => {

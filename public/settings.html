@@ -65,6 +65,43 @@
         </div>
       </div>
 
+      <!-- Cloud Sync & Guest Space -->
+      <div class="card mb-4" style="border-left: 4px solid var(--accent, #6366f1);">
+        <div class="card-header">
+          <div class="card-title">☁️ Cloud Sync & Guest Space</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <p style="font-size:13px;color:var(--text-secondary);margin:0;line-height:1.5;">
+            Your database records are saved securely in your private cloud space. To access this exact same space on other devices (e.g. your phone or tablet), copy your Space ID below and paste it on that device.
+          </p>
+          
+          <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:14px;color:var(--text-primary);font-weight:600;" id="txt-space-id">
+              Loading Space ID...
+            </div>
+            <button class="btn btn-secondary" id="btn-copy-space-id" style="white-space:nowrap;">📋 Copy Key</button>
+          </div>
+          
+          <div style="border-top:1px solid var(--border);padding-top:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Connect Another Space</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Load a Space ID (Sync Key) from your other device to sync your progress here.</div>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="input-space-id" placeholder="Paste your Space ID (Sync Key) here..." style="
+                flex:1;
+                background:var(--bg-elevated);
+                border:1px solid var(--border);
+                border-radius:var(--radius-md);
+                padding:8px 12px;
+                color:var(--text-primary);
+                font-family:monospace;
+                font-size:13px;
+              " />
+              <button class="btn btn-primary" id="btn-load-space-id">Sync Space</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Data Management -->
       <div class="card mb-4">
         <div class="card-header">
@@ -140,6 +177,52 @@
 <script src="/js/app.js"></script>
 <script>
 // Settings page logic
+
+// ─── Guest Space Sync ─────────────────────────────────────────────────────
+const spaceIdEl = document.getElementById('txt-space-id');
+const copyBtn = document.getElementById('btn-copy-space-id');
+const loadInput = document.getElementById('input-space-id');
+const loadBtn = document.getElementById('btn-load-space-id');
+
+// Retrieve current Space ID
+const currentSpaceId = api.getUserId();
+if (spaceIdEl) {
+  spaceIdEl.textContent = currentSpaceId;
+}
+
+// Copy Space ID
+if (copyBtn) {
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(currentSpaceId).then(() => {
+      Toast.success('Space ID copied to clipboard!');
+    }).catch(err => {
+      Toast.error('Failed to copy Space ID');
+    });
+  });
+}
+
+// Load Space ID
+if (loadBtn) {
+  loadBtn.addEventListener('click', () => {
+    const newId = loadInput.value.trim();
+    if (!newId) {
+      Toast.error('Please enter a valid Space ID');
+      return;
+    }
+    if (newId === currentSpaceId) {
+      Toast.info('You are already connected to this space.');
+      return;
+    }
+    if (!confirm('Syncing will switch you to this new workspace. Your current browser space will be replaced. Are you sure?')) {
+      return;
+    }
+    // Update local storage and reload
+    localStorage.setItem('ielts_prep_user_id', newId);
+    document.cookie = `ielts_prep_user_id=${newId}; path=/; max-age=31536000; SameSite=Lax`;
+    Toast.success('Space synced successfully! Reloading...');
+    setTimeout(() => window.location.reload(), 1500);
+  });
+}
 
 // ─── Export ──────────────────────────────────────────────────────────────
 
