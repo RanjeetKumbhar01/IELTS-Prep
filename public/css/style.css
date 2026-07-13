@@ -651,9 +651,9 @@ select {
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
 /* ─── Empty State ───────────────────────────────────────────────────────── */
-.empty-state { text-align: center; padding: 40px 16px; color: var(--text-muted); }
-.empty-state h3 { font-size: 14.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; }
-.empty-state p { font-size: 12.5px; max-width: 280px; margin: 0 auto 12px; }
+.empty-state { text-align: center; padding: 20px 12px; color: var(--text-muted); }
+.empty-state h3 { font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 2px; }
+.empty-state p { font-size: 12px; max-width: 280px; margin: 0 auto 8px; }
 
 /* ─── Toast ─────────────────────────────────────────────────────────────── */
 .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 6px; }
@@ -735,10 +735,147 @@ select {
 .w-full        { width: 100%; }
 .hidden        { display: none !important; }
 
+/* ─── Onboarding Container ──────────────────────────────────────────────── */
+.onboarding-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-slow);
+}
+
+.onboarding-container:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.onboarding-badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.onboarding-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.onboarding-close-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.onboarding-close-btn:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.onboarding-intro {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.onboarding-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.onboarding-step-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  position: relative;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.onboarding-step-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.step-number-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.step-icon-wrapper {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 6px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-icon-wrapper svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.onboarding-step-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.onboarding-step-card p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.onboarding-step-card p strong {
+  color: var(--text-primary);
+}
+
 /* ─── App Footer ────────────────────────────────────────────────────────── */
 .app-footer {
-  margin-top: 48px;
-  padding: 16px 0;
+  margin-top: 32px;
+  padding: 12px 0;
   border-top: 1px solid var(--border);
   text-align: center;
 }
@@ -759,4 +896,7 @@ select {
   .form-row { flex-direction: column; }
   .session-timer { top: 4px; flex-wrap: wrap; }
   .timer-target { margin-left: auto; }
+  .onboarding-steps-grid { grid-template-columns: 1fr; }
+  .onboarding-header { align-items: flex-start; }
+  .onboarding-header > div { flex-direction: column; align-items: flex-start !important; gap: 4px !important; }
 }

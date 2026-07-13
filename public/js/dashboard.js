@@ -7,6 +7,15 @@ async function loadDashboard() {
     ]);
 
     // Stats
+    const statsGrid = document.getElementById('dashboard-stats-grid');
+    if (statsGrid) {
+      if (overview.totalBooks === 0) {
+        statsGrid.classList.add('hidden');
+      } else {
+        statsGrid.classList.remove('hidden');
+      }
+    }
+
     document.getElementById('stat-books').textContent = overview.totalBooks;
     document.getElementById('stat-tests').textContent = overview.totalTests;
 
@@ -152,6 +161,40 @@ document.getElementById('btn-save-edit-book-dash')?.addEventListener('click', as
     Toast.error('Failed to update book');
   }
 });
+
+// Onboarding guide close and show behaviors
+const onboardingGuide = document.getElementById('onboarding-guide');
+const closeOnboardingBtn = document.getElementById('btn-close-onboarding');
+const showOnboardingBtn = document.getElementById('btn-show-onboarding');
+
+if (onboardingGuide && closeOnboardingBtn) {
+  if (localStorage.getItem('onboarding-dismissed') === 'true') {
+    onboardingGuide.classList.add('hidden');
+    if (showOnboardingBtn) showOnboardingBtn.style.display = 'inline-flex';
+  }
+
+  closeOnboardingBtn.addEventListener('click', () => {
+    onboardingGuide.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    onboardingGuide.style.opacity = '0';
+    onboardingGuide.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      onboardingGuide.classList.add('hidden');
+      localStorage.setItem('onboarding-dismissed', 'true');
+      if (showOnboardingBtn) showOnboardingBtn.style.display = 'inline-flex';
+    }, 250);
+  });
+
+  if (showOnboardingBtn) {
+    showOnboardingBtn.addEventListener('click', () => {
+      localStorage.removeItem('onboarding-dismissed');
+      showOnboardingBtn.style.display = 'none';
+      onboardingGuide.classList.remove('hidden');
+      onboardingGuide.style.opacity = '1';
+      onboardingGuide.style.transform = 'translateY(0)';
+      onboardingGuide.style.transition = 'none';
+    });
+  }
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 loadDashboard();

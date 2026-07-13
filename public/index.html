@@ -39,6 +39,7 @@
       <div class="topbar-left">
         <div class="breadcrumb">
           <span class="current">Dashboard</span>
+          <button class="btn btn-sm" id="btn-show-onboarding" style="display: none; margin-left: 12px; font-weight: 600; padding: 3px 8px; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); background: var(--accent-soft);">Guide to use this website</button>
         </div>
       </div>
       <div class="topbar-right">
@@ -52,8 +53,82 @@
         <p class="page-subtitle">Track your mock tests, target scores, and section analytics.</p>
       </div>
 
+      <!-- Onboarding Guide Section -->
+      <div class="onboarding-container" id="onboarding-guide">
+        <div class="onboarding-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="onboarding-badge">Setup Guide</span>
+            <h2 class="onboarding-section-title">Guide to Use This Website</h2>
+          </div>
+          <button class="onboarding-close-btn" id="btn-close-onboarding" aria-label="Dismiss guide" title="Dismiss setup guide">✕</button>
+        </div>
+        
+        <p class="onboarding-intro">
+          This platform is designed to simulate the actual online computer-delivered IELTS exam. Follow this recommended workflow:
+        </p>
+
+        <div class="onboarding-steps-grid">
+          <div class="onboarding-step-card">
+            <div class="step-number-tag">Step 1</div>
+            <div class="step-icon-wrapper">
+              <!-- Monitor icon showing split-screen highlight on the left -->
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="2" y1="17" x2="22" y2="17"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <!-- Split divider -->
+                <line x1="11" y1="3" x2="11" y2="17" stroke-dasharray="2 2"></line>
+                <!-- Left document icon lines inside the left split -->
+                <line x1="5" y1="6" x2="8" y2="6"></line>
+                <line x1="5" y1="9" x2="8" y2="9"></line>
+                <line x1="5" y1="12" x2="7" y2="12"></line>
+              </svg>
+            </div>
+            <h3>1. Book PDF on Left</h3>
+            <p>Open your practice book PDF (e.g. <strong>Book 14 Test 1</strong>) on the left side of your screen.</p>
+          </div>
+
+          <div class="onboarding-step-card">
+            <div class="step-number-tag">Step 2</div>
+            <div class="step-icon-wrapper">
+              <!-- Monitor icon showing split-screen highlight on the right -->
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="2" y1="17" x2="22" y2="17"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <!-- Split divider -->
+                <line x1="13" y1="3" x2="13" y2="17" stroke-dasharray="2 2"></line>
+                <!-- Right application mock checks/fields -->
+                <rect x="16" y="6" width="3" height="3" rx="0.5"></rect>
+                <line x1="16" y1="11" x2="19" y2="11"></line>
+                <line x1="16" y1="13" x2="18" y2="13"></line>
+              </svg>
+            </div>
+            <h3>2. This Website on Right</h3>
+            <p>Open this platform on the right side to record answers. This avoids handwriting to train for the online IELTS exam.</p>
+          </div>
+
+          <div class="onboarding-step-card">
+            <div class="step-number-tag">Step 3</div>
+            <div class="step-icon-wrapper">
+              <!-- Document/Book checkmark or plus sign -->
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <path d="M9 9h6"></path>
+                <path d="M9 13h6"></path>
+              </svg>
+            </div>
+            <h3>3. Ready to Practice</h3>
+            <p>We cannot host copyrighted books. Simply enter the book &amp; test numbers, and start practicing!</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Stats Grid -->
-      <div class="stats-grid">
+      <div class="stats-grid" id="dashboard-stats-grid">
         <div class="stat-card" style="--accent-color:var(--accent)">
           <div class="stat-value" id="stat-books">—</div>
           <div class="stat-label">Books Tracking</div>
