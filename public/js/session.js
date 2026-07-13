@@ -26,11 +26,22 @@ function startTimer() {
 function stopTimer() {
   timerRunning = false;
   clearInterval(timerInterval);
-  document.getElementById('btn-timer-start').classList.remove('hidden');
+  const startBtn = document.getElementById('btn-timer-start');
+  if (startBtn) {
+    startBtn.classList.remove('hidden');
+    startBtn.textContent = timerSeconds > 0 ? 'Resume' : 'Start';
+  }
   document.getElementById('btn-timer-stop').classList.add('hidden');
   document.getElementById('timer-display').classList.remove('timer-running');
 }
-function resetTimer() { stopTimer(); timerSeconds = 0; targetAlertedFor = null; updateTimerDisplay(); }
+function resetTimer() { 
+  stopTimer(); 
+  timerSeconds = 0; 
+  targetAlertedFor = null; 
+  updateTimerDisplay(); 
+  const startBtn = document.getElementById('btn-timer-start');
+  if (startBtn) startBtn.textContent = 'Start';
+}
 function updateTimerDisplay() {
   const display = document.getElementById('timer-display');
   display.textContent = formatTime(timerSeconds);
@@ -164,7 +175,15 @@ function updateQuestionScoreboard(sectionType) {
   const marked = [...all].filter(button => button.dataset.val !== '').length;
   const header = document.getElementById(`${sectionType.toLowerCase()}-header-tally`);
   const detail = document.getElementById(`${sectionType.toLowerCase()}-header-detail`);
-  if (header) header.textContent = `${correct} / ${all.length}`;
+  if (header) {
+    let bandText = '';
+    if (sectionType === 'Listening') {
+      bandText = ` (Band ${calculateListeningBand(correct).toFixed(1)})`;
+    } else if (sectionType === 'Reading') {
+      bandText = ` (Band ${calculateReadingBand(correct).toFixed(1)})`;
+    }
+    header.textContent = `${correct} / ${all.length}${bandText}`;
+  }
   if (detail) detail.textContent = `${marked} marked · ${all.length - marked} to check`;
 }
 
@@ -341,17 +360,11 @@ function buildPartSettingsHTML(partId, secData, partQType, qCount) {
           onchange="rebuildPartQuestions('${partId}')" />
       </div>
       <div class="form-group">
-        <label>Time (min)</label>
-        <input type="number" id="${partId}-time" min="0" max="90"
-          value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:70px;"
-          ${partId.startsWith('read-p') ? `oninput="if (activeReadingPassage === ${partId.replace('read-p', '')}) setActiveReadingPassage(${partId.replace('read-p', '')})"` : ''} />
-      </div>
-      ${partId.startsWith('read-p') ? `<div class="form-group">
         <label>Timer alert at (min)</label>
         <input type="number" id="${partId}-target" min="0" max="90"
-          value="${secData?.target_time_seconds ? Math.round(secData.target_time_seconds / 60) : ''}" placeholder="e.g. 12" style="width:78px;"
-          oninput="if (activeReadingPassage === ${partId.replace('read-p', '')}) setActiveReadingPassage(${partId.replace('read-p', '')})" />
-      </div>` : ''}
+          value="${secData?.target_time_seconds ? Math.round(secData.target_time_seconds / 60) : ''}" placeholder="e.g. 15" style="width:78px;"
+          oninput="${partId.startsWith('read-p') ? `if (activeReadingPassage === ${partId.replace('read-p', '')}) setActiveReadingPassage(${partId.replace('read-p', '')})` : ''}" />
+      </div>
       <div class="form-group">
         <label>Score</label>
         <input type="number" id="${partId}-score-inp" min="0"
@@ -533,9 +546,9 @@ function buildWritingTasks(existingData) {
       <div class="writing-task-hint">${task.context} · Min ${task.minWords} words</div>
       <div class="part-settings" style="border:none;padding-top:0;">
         <div class="form-group">
-          <label>Time (min)</label>
-          <input type="number" id="write-t${task.num}-time" min="0" max="90"
-            value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:80px;" />
+          <label>Timer alert at (min)</label>
+          <input type="number" id="write-t${task.num}-target" min="0" max="90"
+            value="${secData?.target_time_seconds ? Math.round(secData.target_time_seconds / 60) : ''}" placeholder="e.g. 20" style="width:80px;" />
         </div>
         <div class="form-group">
           <label>Band Score</label>
@@ -602,9 +615,9 @@ function buildSpeakingParts(existingData) {
           <input type="number" id="speak-p${part.num}-score" min="0" max="9" step="0.5" oninput="updateTally()"
             value="${secData ? secData.score : ''}" placeholder="—"
             style="width:50px;text-align:center;" />
-          <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Time (min):</label>
-          <input type="number" id="speak-p${part.num}-time" min="0" max="20"
-            value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0"
+          <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Timer alert (min):</label>
+          <input type="number" id="speak-p${part.num}-target" min="0" max="20"
+            value="${secData?.target_time_seconds ? Math.round(secData.target_time_seconds / 60) : ''}" placeholder="—"
             style="width:50px;text-align:center;" />
         </div>
       </div>
@@ -667,7 +680,6 @@ async function saveSectionPart(sectionType, partNum) {
   const prefix = sectionType === 'Listening' ? `listen-p${partNum}` : `read-p${partNum}`;
 
   const partQType = document.getElementById(`${prefix}-qtype`)?.value || '';
-  const timeVal   = document.getElementById(`${prefix}-time`)?.value;
   const targetVal = document.getElementById(`${prefix}-target`)?.value;
   const scoreVal  = document.getElementById(`${prefix}-score-inp`)?.value;
   const maxVal    = document.getElementById(`${prefix}-max`)?.value;
@@ -677,7 +689,7 @@ async function saveSectionPart(sectionType, partNum) {
   const section = await api.post(`/api/tests/${TEST_ID}/sections`, {
     section_type: sectionType,
     part_number:  partNum,
-    time_taken_seconds: timeVal ? parseInt(timeVal) * 60 : 0,
+    time_taken_seconds: 0,
     target_time_seconds: targetVal ? parseInt(targetVal) * 60 : 0,
     score:    scoreVal ? parseFloat(scoreVal) : 0,
     max_score: maxVal ? parseFloat(maxVal) : (parseInt(countVal) || 10),
@@ -711,7 +723,7 @@ async function saveSectionPart(sectionType, partNum) {
 }
 
 async function saveWritingTask(taskNum) {
-  const timeVal   = document.getElementById(`write-t${taskNum}-time`)?.value;
+  const targetVal = document.getElementById(`write-t${taskNum}-target`)?.value;
   const scoreVal  = document.getElementById(`write-t${taskNum}-score`)?.value;
   const myText    = document.getElementById(`write-t${taskNum}-my`)?.value || '';
   const correct   = document.getElementById(`write-t${taskNum}-correct`)?.value || '';
@@ -720,7 +732,8 @@ async function saveWritingTask(taskNum) {
   const section = await api.post(`/api/tests/${TEST_ID}/sections`, {
     section_type: 'Writing',
     part_number:  taskNum,
-    time_taken_seconds: timeVal ? parseInt(timeVal) * 60 : 0,
+    time_taken_seconds: 0,
+    target_time_seconds: targetVal ? parseInt(targetVal) * 60 : 0,
     score:     scoreVal ? parseFloat(scoreVal) : 0,
     max_score: 9,
     notes
@@ -740,8 +753,8 @@ async function saveWritingTask(taskNum) {
 }
 
 async function saveSpeakingPart(partNum) {
-  const scoreVal = document.getElementById(`speak-p${partNum}-score`)?.value;
-  const timeVal  = document.getElementById(`speak-p${partNum}-time`)?.value;
+  const scoreVal  = document.getElementById(`speak-p${partNum}-score`)?.value;
+  const targetVal = document.getElementById(`speak-p${partNum}-target`)?.value;
   const topic    = document.getElementById(`speak-p${partNum}-topic`)?.value || '';
   const myNotes  = document.getElementById(`speak-p${partNum}-mynotes`)?.value || '';
   const feedback = document.getElementById(`speak-p${partNum}-feedback`)?.value || '';
@@ -750,7 +763,8 @@ async function saveSpeakingPart(partNum) {
   const section = await api.post(`/api/tests/${TEST_ID}/sections`, {
     section_type: 'Speaking',
     part_number:  partNum,
-    time_taken_seconds: timeVal ? parseInt(timeVal) * 60 : 0,
+    time_taken_seconds: 0,
+    target_time_seconds: targetVal ? parseInt(targetVal) * 60 : 0,
     score:     scoreVal ? parseFloat(scoreVal) : 0,
     max_score: 9,
     notes
@@ -853,8 +867,13 @@ document.getElementById('btn-edit-test').addEventListener('click', () => Modal.o
 
 document.getElementById('btn-update-test').addEventListener('click', async () => {
   try {
+    const testNum = document.getElementById('edit-test-num').value.trim();
+    if (!testNum) {
+      Toast.error('Test number is required');
+      return;
+    }
     await api.put(`/api/tests/${TEST_ID}`, {
-      test_number:  document.getElementById('edit-test-num').value,
+      test_number:  testNum,
       mode:         document.getElementById('edit-test-mode').value,
       date:         document.getElementById('edit-test-date').value,
       total_score:  document.getElementById('edit-test-score').value || null,

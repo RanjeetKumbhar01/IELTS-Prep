@@ -1,5 +1,15 @@
 /* ── Shared app utilities, API layer, layout config ── */
 
+// ─── Theme Switcher Initialization ──────────────────────────────────────────
+(function() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+
 // ─── API Helper ───────────────────────────────────────────────────────────
 
 const api = {
@@ -219,8 +229,8 @@ const CookieConsent = {
       bottom: 20px;
       right: 20px;
       max-width: 340px;
-      background: #ffffff;
-      border: 1px solid var(--border-strong, #cbd5e1);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-left: 3px solid var(--accent, #2563eb);
       border-radius: 6px;
       padding: 12px 16px;
@@ -277,10 +287,96 @@ const CookieConsent = {
   }
 };
 
+// ─── Theme Switcher Toggle & IELTS Band Helper ────────────────────────────
+
+function updateThemeToggleUI(theme) {
+  const toggleIcon = document.getElementById('theme-toggle-icon');
+  const toggleText = document.getElementById('theme-toggle-text');
+  if (!toggleIcon || !toggleText) return;
+  if (theme === 'dark') {
+    toggleIcon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+    toggleText.textContent = 'Light Mode';
+  } else {
+    toggleIcon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    toggleText.textContent = 'Dark Mode';
+  }
+}
+
+function initThemeToggler() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  updateThemeToggleUI(currentTheme);
+
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const themeNow = document.documentElement.getAttribute('data-theme') || 'light';
+      const targetTheme = themeNow === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('theme', targetTheme);
+      updateThemeToggleUI(targetTheme);
+      
+      // Dispatch custom event so that charts can re-render
+      window.dispatchEvent(new CustomEvent('themechanged', { detail: { theme: targetTheme } }));
+    });
+  }
+}
+
+function calculateListeningBand(correct) {
+  if (correct >= 39) return 9.0;
+  if (correct >= 37) return 8.5;
+  if (correct >= 35) return 8.0;
+  if (correct >= 32) return 7.5;
+  if (correct >= 30) return 7.0;
+  if (correct >= 26) return 6.5;
+  if (correct >= 23) return 6.0;
+  if (correct >= 20) return 5.5;
+  if (correct >= 16) return 5.0;
+  if (correct >= 13) return 4.5;
+  if (correct >= 10) return 4.0;
+  if (correct >= 6) return 3.5;
+  if (correct >= 4) return 3.0;
+  if (correct >= 2) return 2.5;
+  if (correct >= 1) return 2.0;
+  return 0.0;
+}
+
+// Map Academic reading raw scores to IELTS band scores
+function calculateReadingBand(correct) {
+  if (correct >= 39) return 9.0;
+  if (correct >= 37) return 8.5;
+  if (correct >= 35) return 8.0;
+  if (correct >= 33) return 7.5;
+  if (correct >= 30) return 7.0;
+  if (correct >= 27) return 6.5;
+  if (correct >= 23) return 6.0;
+  if (correct >= 19) return 5.5;
+  if (correct >= 15) return 5.0;
+  if (correct >= 13) return 4.5;
+  if (correct >= 10) return 4.0;
+  if (correct >= 6) return 3.5;
+  if (correct >= 4) return 3.0;
+  if (correct >= 2) return 2.5;
+  if (correct >= 1) return 2.0;
+  return 0.0;
+}
+
+function roundToIeltsBand(score) {
+  const integerPart = Math.floor(score);
+  const fractionalPart = score - integerPart;
+  if (fractionalPart < 0.25) {
+    return integerPart;
+  } else if (fractionalPart < 0.75) {
+    return integerPart + 0.5;
+  } else {
+    return integerPart + 1.0;
+  }
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   Toast.init();
   setActiveNav();
   CookieConsent.init();
+  initThemeToggler();
 });

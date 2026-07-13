@@ -208,6 +208,108 @@ function registerRoutes() {
     } catch(e) { res.status(500).json({ error: e.message }); }
   });
 
+  async function recalculateTestTotalScore(testId) {
+    try {
+      const sections = await db.all('SELECT * FROM sections WHERE test_id = ?', [testId]);
+      const groups = { Listening: [], Reading: [], Writing: [], Speaking: [] };
+      sections.forEach(s => {
+        if (groups[s.section_type]) groups[s.section_type].push(s);
+      });
+
+      const bands = [];
+
+      function getListeningBand(correct) {
+        if (correct >= 39) return 9.0;
+        if (correct >= 37) return 8.5;
+        if (correct >= 35) return 8.0;
+        if (correct >= 32) return 7.5;
+        if (correct >= 30) return 7.0;
+        if (correct >= 26) return 6.5;
+        if (correct >= 23) return 6.0;
+        if (correct >= 20) return 5.5;
+        if (correct >= 16) return 5.0;
+        if (correct >= 13) return 4.5;
+        if (correct >= 10) return 4.0;
+        if (correct >= 6) return 3.5;
+        if (correct >= 4) return 3.0;
+        if (correct >= 2) return 2.5;
+        if (correct >= 1) return 2.0;
+        return 0.0;
+      }
+
+      function getReadingBand(correct) {
+        if (correct >= 39) return 9.0;
+        if (correct >= 37) return 8.5;
+        if (correct >= 35) return 8.0;
+        if (correct >= 33) return 7.5;
+        if (correct >= 30) return 7.0;
+        if (correct >= 27) return 6.5;
+        if (correct >= 23) return 6.0;
+        if (correct >= 19) return 5.5;
+        if (correct >= 15) return 5.0;
+        if (correct >= 13) return 4.5;
+        if (correct >= 10) return 4.0;
+        if (correct >= 6) return 3.5;
+        if (correct >= 4) return 3.0;
+        if (correct >= 2) return 2.5;
+        if (correct >= 1) return 2.0;
+        return 0.0;
+      }
+
+      function roundBand(val) {
+        const integerPart = Math.floor(val);
+        const fractionalPart = val - integerPart;
+        if (fractionalPart < 0.25) return integerPart;
+        if (fractionalPart < 0.75) return integerPart + 0.5;
+        return integerPart + 1.0;
+      }
+
+      if (groups.Listening.length > 0) {
+        const correctSum = groups.Listening.reduce((sum, s) => sum + s.score, 0);
+        const maxSum = groups.Listening.reduce((sum, s) => sum + s.max_score, 0);
+        if (maxSum > 0) {
+          const scaledCorrect = Math.round((correctSum / maxSum) * 40);
+          bands.push(getListeningBand(scaledCorrect));
+        }
+      }
+
+      if (groups.Reading.length > 0) {
+        const correctSum = groups.Reading.reduce((sum, s) => sum + s.score, 0);
+        const maxSum = groups.Reading.reduce((sum, s) => sum + s.max_score, 0);
+        if (maxSum > 0) {
+          const scaledCorrect = Math.round((correctSum / maxSum) * 40);
+          bands.push(getReadingBand(scaledCorrect));
+        }
+      }
+
+      if (groups.Writing.length > 0) {
+        const validScores = groups.Writing.map(s => s.score).filter(v => v > 0);
+        if (validScores.length > 0) {
+          const avg = validScores.reduce((sum, v) => sum + v, 0) / validScores.length;
+          bands.push(avg);
+        }
+      }
+
+      if (groups.Speaking.length > 0) {
+        const validScores = groups.Speaking.map(s => s.score).filter(v => v > 0);
+        if (validScores.length > 0) {
+          const avg = validScores.reduce((sum, v) => sum + v, 0) / validScores.length;
+          bands.push(avg);
+        }
+      }
+
+      if (bands.length > 0) {
+        const avgBand = bands.reduce((sum, b) => sum + b, 0) / bands.length;
+        const finalBand = roundBand(avgBand);
+        await db.run('UPDATE tests SET total_score = ? WHERE id = ?', [finalBand, testId]);
+      } else {
+        await db.run('UPDATE tests SET total_score = NULL WHERE id = ?', [testId]);
+      }
+    } catch (err) {
+      console.error('Error recalculating test score:', err);
+    }
+  }
+
   app.post('/api/tests/:testId/sections', async (req, res) => {
     try {
       // Verify test ownership
@@ -241,6 +343,8 @@ function registerRoutes() {
         );
         sectionId = result.lastInsertRowid;
       }
+
+      await recalculateTestTotalScore(req.params.testId);
 
       const section = await db.get('SELECT * FROM sections WHERE id = ?', [sectionId]);
       res.json(section);

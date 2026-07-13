@@ -26,13 +26,17 @@
       </a>
     </div>
     <nav class="sidebar-nav">
-      <a href="/" class="nav-item" data-page="index"><span class="nav-icon"></span><span>Dashboard</span></a>
-      <a href="/progress.html" class="nav-item active" data-page="progress"><span class="nav-icon"></span><span>Progress</span></a>
-      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon"></span><span>Settings</span></a>
+      <a href="/" class="nav-item" data-page="index"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span><span>Dashboard</span></a>
+      <a href="/progress.html" class="nav-item active" data-page="progress"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span><span>Progress</span></a>
+      <a href="/settings.html" class="nav-item" data-page="settings"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span><span>Settings</span></a>
     </nav>
     <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:4px;">
-      <a href="https://forms.gle/sSuzFMHQmn37jxK16" target="_blank" class="nav-item" style="color: var(--accent); font-weight: 600; padding: 4px 10px;"><span class="nav-icon"></span><span>Feedback</span></a>
-      <a href="/legal.html" class="nav-item" style="padding: 4px 10px;"><span class="nav-icon"></span><span>Privacy &amp; Terms</span></a>
+      <button class="nav-item" id="theme-toggle" style="padding: 6px 10px; border: none; background: none; color: var(--text-secondary); width: 100%; font-family: inherit;">
+        <span class="nav-icon" id="theme-toggle-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+        <span id="theme-toggle-text">Dark Mode</span>
+      </button>
+      <a href="https://forms.gle/sSuzFMHQmn37jxK16" target="_blank" class="nav-item" style="color: var(--accent); font-weight: 600; padding: 6px 10px;"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span><span>Feedback</span></a>
+      <a href="/legal.html" class="nav-item" style="padding: 6px 10px;"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span><span>Privacy &amp; Terms</span></a>
     </div>
   </aside>
 
@@ -75,53 +79,39 @@
         </div>
       </div>
 
-      <div class="grid-2">
-        <!-- Question Type Accuracy -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Question Type Accuracy</h3>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px;" id="qtype-list"></div>
-          <div id="qtype-empty" class="empty-state hidden">
-            <h3>No data available</h3>
-            <p>Answer questions in Listening or Reading sessions to build accuracy metrics.</p>
+      <!-- History Table -->
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+          <h3 class="card-title">Test Session History</h3>
+          <div style="display:flex;gap:8px;">
+            <select id="filter-mode" style="padding:4px 8px;font-size:12px;width:120px;">
+              <option value="">All Modes</option>
+              <option value="practice">Practice Only</option>
+              <option value="mock">Mocks Only</option>
+            </select>
           </div>
         </div>
-
-        <!-- History Table -->
-        <div class="card" style="display:flex;flex-direction:column;">
-          <div class="card-header" style="flex-wrap:wrap;gap:10px;">
-            <h3 class="card-title">Test Session History</h3>
-            <div style="display:flex;gap:8px;">
-              <select id="filter-mode" style="padding:4px 8px;font-size:12px;width:120px;">
-                <option value="">All Modes</option>
-                <option value="practice">Practice Only</option>
-                <option value="mock">Mocks Only</option>
-              </select>
-            </div>
-          </div>
-          <div style="flex:1;overflow-x:auto;">
-            <table class="analytics-table">
-              <thead>
-                <tr>
-                  <th>Book</th>
-                  <th>Test</th>
-                  <th>Date</th>
-                  <th>Mode</th>
-                  <th>Listening</th>
-                  <th>Reading</th>
-                  <th>Writing</th>
-                  <th>Speaking</th>
-                  <th>Band</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="tests-table-body"></tbody>
-            </table>
-            <div id="tests-table-empty" class="empty-state hidden">
-              <h3>No tests found</h3>
-              <p>Practice tests matching the filter will display here.</p>
-            </div>
+        <div style="flex:1;overflow-x:auto;">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Test</th>
+                <th>Date</th>
+                <th>Mode</th>
+                <th>Listening</th>
+                <th>Reading</th>
+                <th>Writing</th>
+                <th>Speaking</th>
+                <th>Band</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tests-table-body"></tbody>
+          </table>
+          <div id="tests-table-empty" class="empty-state hidden">
+            <h3>No tests found</h3>
+            <p>Practice tests matching the filter will display here.</p>
           </div>
         </div>
       </div>

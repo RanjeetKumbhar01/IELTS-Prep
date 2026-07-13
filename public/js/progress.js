@@ -13,7 +13,6 @@ async function loadProgress() {
     allTests = tests;
     renderProgressChart(progress.bySection);
     renderAvgChart(progress.bySection);
-    renderQTypeAccuracy(progress.byQuestionType);
     renderTestsTable(tests);
   } catch(e) {
     Toast.error('Failed to load analytics');
@@ -48,6 +47,11 @@ function renderProgressChart(bySectionData) {
     };
   });
 
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#d1d5db' : '#475569';
+  const gridColor = isDark ? '#1f2937' : '#f1f5f9';
+  const tickColor = isDark ? '#94a3b8' : '#64748b';
+
   const ctx = document.getElementById('chart-progress').getContext('2d');
   if (progressChart) progressChart.destroy();
 
@@ -62,7 +66,7 @@ function renderProgressChart(bySectionData) {
         legend: {
           display: true,
           position: 'top',
-          labels: { color: '#475569', usePointStyle: true }
+          labels: { color: textColor, usePointStyle: true }
         },
         tooltip: {
           callbacks: {
@@ -73,13 +77,13 @@ function renderProgressChart(bySectionData) {
       scales: {
         x: {
           type: 'category',
-          ticks: { color: '#64748b' },
-          grid: { color: '#f1f5f9' }
+          ticks: { color: tickColor },
+          grid: { color: gridColor }
         },
         y: {
           min: 0, max: 100,
-          ticks: { color: '#64748b', callback: v => v + '%' },
-          grid: { color: '#f1f5f9' }
+          ticks: { color: tickColor, callback: v => v + '%' },
+          grid: { color: gridColor }
         }
       }
     }
@@ -97,6 +101,10 @@ function renderAvgChart(bySectionData) {
     if (!pts.length) return 0;
     return Math.round(pts.reduce((s, d) => s + d.pct, 0) / pts.length);
   });
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? '#1f2937' : '#f1f5f9';
+  const tickColor = isDark ? '#94a3b8' : '#64748b';
 
   const ctx = document.getElementById('chart-avg').getContext('2d');
   if (avgChart) avgChart.destroy();
@@ -118,46 +126,18 @@ function renderAvgChart(bySectionData) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#64748b' }, grid: { display: false } },
+        x: { ticks: { color: tickColor }, grid: { display: false } },
         y: {
           min: 0, max: 100,
-          ticks: { color: '#64748b', callback: v => v + '%' },
-          grid: { color: '#f1f5f9' }
+          ticks: { color: tickColor, callback: v => v + '%' },
+          grid: { color: gridColor }
         }
       }
     }
   });
 }
 
-// ─── Question Type Accuracy ───────────────────────────────────────────────
 
-function renderQTypeAccuracy(qtypes) {
-  const list = document.getElementById('qtype-list');
-  const empty = document.getElementById('qtype-empty');
-  list.innerHTML = '';
-
-  if (!qtypes.length) {
-    empty.classList.remove('hidden');
-    return;
-  }
-  empty.classList.add('hidden');
-
-  qtypes.slice(0, 10).forEach(qt => {
-    const pct = qt.total > 0 ? Math.round((qt.correct / qt.total) * 100) : 0;
-    const color = pct >= 70 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;font-weight:600;color:var(--text-primary);">${escapeHtml(qt.question_type)}</span>
-        <span style="font-size:12px;font-weight:700;color:${color};">${pct}% (${qt.correct}/${qt.total})</span>
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" style="width:${pct}%;background:${color};"></div>
-      </div>
-    `;
-    list.appendChild(div);
-  });
-}
 
 // ─── Tests Table ──────────────────────────────────────────────────────────
 
@@ -223,5 +203,9 @@ function escapeHtml(str) {
 }
 
 document.getElementById('filter-mode').addEventListener('change', () => renderTestsTable(allTests));
+
+window.addEventListener('themechanged', () => {
+  loadProgress();
+});
 
 loadProgress();
