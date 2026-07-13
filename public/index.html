@@ -11,6 +11,15 @@
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-43Y0L0RVM3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-43Y0L0RVM3');
+  </script>
 </head>
 <body>
 <div class="app-layout">
@@ -43,7 +52,7 @@
       <div class="topbar-left">
         <div class="breadcrumb">
           <span class="current">Dashboard</span>
-          <button class="btn btn-sm" id="btn-show-onboarding" style="display: none; margin-left: 12px; font-weight: 600; padding: 3px 8px; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); background: var(--accent-soft);">Guide to use this website</button>
+          <button class="btn btn-sm" id="btn-show-onboarding" style="display: none; margin-left: 12px; font-weight: 600; padding: 3px 8px; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); background: var(--accent-soft);">Guide </button>
         </div>
       </div>
       <div class="topbar-right">
@@ -53,8 +62,12 @@
 
     <main class="page-content">
       <div class="page-header">
-        <h1 class="page-title">Preparation Overview</h1>
-        <p class="page-subtitle">Track your mock tests, target scores, and section analytics.</p>
+        <h1 class="page-title" style="font-size: 19px; font-weight: 700; color: var(--text-primary);">
+          Preparation Overview
+          <span style="font-weight: 500; font-size: 13px; color: var(--text-secondary); margin-left: 8px; display: inline-block;">
+            · Track mock tests, target scores, and section analytics
+          </span>
+        </h1>
       </div>
 
       <!-- Onboarding Guide Section -->
@@ -68,7 +81,7 @@
         </div>
         
         <p class="onboarding-intro">
-          This platform is designed to simulate the actual online computer-delivered IELTS exam. Follow this recommended workflow:
+          Simulate the online computer IELTS exam by following this workflow:
         </p>
 
         <div class="onboarding-steps-grid">
@@ -92,7 +105,7 @@
               </div>
               <h3 style="margin: 0;">1. Book PDF on Left</h3>
             </div>
-            <p>Open your practice book PDF (e.g. <strong>Book 14 Test 1</strong>) on the left side of your screen.</p>
+            <p>Open your practice PDF on the left side of your screen.</p>
           </div>
 
           <div class="onboarding-step-card">
@@ -115,7 +128,7 @@
               </div>
               <h3 style="margin: 0;">2. This Website on Right</h3>
             </div>
-            <p>Open this platform on the right side to record answers. This avoids handwriting to train for the online IELTS exam.</p>
+            <p>Open this platform on the right side to enter your answers.</p>
           </div>
 
           <div class="onboarding-step-card">
@@ -132,7 +145,7 @@
               </div>
               <h3 style="margin: 0;">3. Ready to Practice</h3>
             </div>
-            <p>We cannot host copyrighted books. Simply enter the book &amp; test numbers, and start practicing!</p>
+            <p>Enter the book and test numbers, and start preparation!</p>
           </div>
         </div>
       </div>
