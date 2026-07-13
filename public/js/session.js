@@ -49,6 +49,14 @@ function switchSection(sectionName) {
   resetTimer();
 }
 
+// Bind click events to tab buttons to allow switching sections
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sec = btn.dataset.section;
+    if (sec) switchSection(sec);
+  });
+});
+
 // ─── Correct Toggle ───────────────────────────────────────────────────────
 
 function cycleCorrect(btn) {
@@ -87,7 +95,6 @@ function buildQuestionRow(num, q = {}) {
     <tr class="q-row" data-qnum="${num}" data-qtype="">
       <td class="q-num">${num}</td>
       <td><input type="text" class="q-answer-input" value="${escapeHtml(q.my_answer || '')}" placeholder="Your answer" /></td>
-      <td><input type="text" class="q-answer-input" value="${escapeHtml(q.correct_answer || '')}" placeholder="Correct answer" /></td>
       <td><button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)">${icons[v] || '·'}</button></td>
       <td><input type="text" class="q-note-input" value="${escapeHtml(q.personal_note || '')}" placeholder="Note" /></td>
       <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
@@ -134,7 +141,6 @@ function addQuestionRow(tbodyId, qtype) {
   tr.innerHTML = `
     <td class="q-num">${nextNum}</td>
     <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
-    <td><input type="text" class="q-answer-input" placeholder="Correct answer" /></td>
     <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
     <td><input type="text" class="q-note-input" placeholder="Note" /></td>
     <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
@@ -175,7 +181,6 @@ function rebuildPartQuestions(partId) {
       tr.innerHTML = `
         <td class="q-num">${i}</td>
         <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
-        <td><input type="text" class="q-answer-input" placeholder="Correct answer" /></td>
         <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
         <td><input type="text" class="q-note-input" placeholder="Note" /></td>
         <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
@@ -241,9 +246,8 @@ function buildQTable(partId, tbodyHtml) {
           <tr>
             <th style="width:30px;">#</th>
             <th>My Answer</th>
-            <th>Correct Answer</th>
             <th style="width:40px;">Mark</th>
-            <th>Note</th>
+            <th style="width:200px;">Note</th>
             <th style="width:30px;"></th>
           </tr>
         </thead>
@@ -542,16 +546,17 @@ async function saveSectionPart(sectionType, partNum) {
 
   rows.forEach(row => {
     const qnum   = parseInt(row.dataset.qnum);
-    const inputs = row.querySelectorAll('input[type="text"]');
+    const myAnswerInput = row.querySelector('.q-answer-input');
+    const noteInput     = row.querySelector('.q-note-input');
     const toggle = row.querySelector('.correct-toggle');
     const valMap = { '1': 1, '0': 0, '': null };
     questions.push({
       question_number: qnum,
       question_type:   partQType,
-      my_answer:       inputs[0]?.value || '',
-      correct_answer:  inputs[1]?.value || '',
+      my_answer:       myAnswerInput?.value || '',
+      correct_answer:  '',
       is_correct:      valMap[toggle?.dataset.val ?? ''] ?? null,
-      personal_note:   inputs[2]?.value || '',
+      personal_note:   noteInput?.value || '',
       word_count:      0
     });
   });

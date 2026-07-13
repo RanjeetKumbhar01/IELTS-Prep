@@ -168,23 +168,15 @@ function setActiveNav() {
 
 const IELTS = {
   QUESTION_TYPES: [
-    'Multiple Choice',
+    'MCQ',
+    'One Word/Number',
     'True / False / Not Given',
-    'Yes / No / Not Given',
-    'Matching Headings',
-    'Matching Information',
-    'Matching Features',
-    'Matching Sentence Endings',
+    'Matching',
     'Sentence Completion',
-    'Summary Completion',
-    'Note Completion',
     'Table Completion',
     'Flow-chart Completion',
     'Diagram Label Completion',
-    'Short Answer',
-    'Form Completion',
-    'Map / Plan Labelling',
-    'Other'
+    'Map / Plan Labelling'
   ],
   LISTENING_PARTS: [
     { num: 1, context: 'Social conversation (e.g., booking, enquiry)', qRange: '1–10' },
