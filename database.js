@@ -30,6 +30,7 @@ async function getDb() {
         book_id     INTEGER NOT NULL,
         test_number TEXT NOT NULL,
         mode        TEXT NOT NULL DEFAULT 'practice',
+        test_section TEXT NOT NULL DEFAULT 'Full Test',
         date        TEXT NOT NULL DEFAULT to_char(CURRENT_DATE, 'YYYY-MM-DD'),
         total_score REAL,
         notes       TEXT DEFAULT '',
@@ -42,6 +43,7 @@ async function getDb() {
         section_type        TEXT NOT NULL,
         part_number         INTEGER DEFAULT 1,
         time_taken_seconds  INTEGER DEFAULT 0,
+        target_time_seconds INTEGER DEFAULT 0,
         score               REAL DEFAULT 0,
         max_score           REAL DEFAULT 0,
         notes               TEXT DEFAULT '',
@@ -68,6 +70,8 @@ async function getDb() {
     } catch (e) {
       console.log('⚡ Postgres Migration Note:', e.message);
     }
+    try { await pool.query(`ALTER TABLE tests ADD COLUMN IF NOT EXISTS test_section TEXT NOT NULL DEFAULT 'Full Test';`); } catch (e) {}
+    try { await pool.query(`ALTER TABLE sections ADD COLUMN IF NOT EXISTS target_time_seconds INTEGER DEFAULT 0;`); } catch (e) {}
 
     // Helper to convert SQLite ? queries to Postgres $1, $2 queries
     function translateSql(sql) {
@@ -124,6 +128,7 @@ async function getDb() {
         book_id     INTEGER NOT NULL,
         test_number TEXT NOT NULL,
         mode        TEXT NOT NULL DEFAULT 'practice',
+        test_section TEXT NOT NULL DEFAULT 'Full Test',
         date        TEXT NOT NULL DEFAULT (date('now','localtime')),
         total_score REAL,
         notes       TEXT DEFAULT '',
@@ -136,6 +141,7 @@ async function getDb() {
         section_type        TEXT NOT NULL,
         part_number         INTEGER DEFAULT 1,
         time_taken_seconds  INTEGER DEFAULT 0,
+        target_time_seconds INTEGER DEFAULT 0,
         score               REAL DEFAULT 0,
         max_score           REAL DEFAULT 0,
         notes               TEXT DEFAULT '',
@@ -162,6 +168,8 @@ async function getDb() {
     } catch (e) {
       // Column already exists, ignore
     }
+    try { db.run("ALTER TABLE tests ADD COLUMN test_section TEXT DEFAULT 'Full Test'"); } catch (e) {}
+    try { db.run("ALTER TABLE sections ADD COLUMN target_time_seconds INTEGER DEFAULT 0"); } catch (e) {}
 
     function save() {
       const data = db.export();

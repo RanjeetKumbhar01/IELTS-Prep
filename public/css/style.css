@@ -390,6 +390,9 @@ select {
   padding: 4px;
   margin-bottom: 16px;
 }
+.tabs-bar.single-section-tabs { justify-content: flex-start; }
+.tabs-bar.single-section-tabs .tab-btn { flex: 0 1 190px; }
+.session-out-of-scope { display: none !important; }
 
 .tab-btn {
   flex: 1;
@@ -508,6 +511,27 @@ select {
 .part-block.open .part-body { display: block; }
 
 /* ─── Timer ─────────────────────────────────────────────────────────────── */
+.session-timer {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+.timer-target { padding-left: 10px; border-left: 1px solid var(--border); display:flex; flex-direction:column; gap:1px; font-size:12px; font-weight:700; }
+.timer-target.over-target, .timer-digits.over-target { color: var(--danger) !important; }
+.timer-digits.over-target { background: var(--danger-bg); outline: 2px solid var(--danger); border-radius: var(--radius-sm); padding: 2px 6px; }
+.timer-alert { animation: timerAlert 1s ease-in-out 3; }
+@keyframes timerAlert { 50% { transform: scale(1.08); background: var(--danger-bg); } }
 .timer-digits {
   font-size: 20px;
   font-weight: 700;
@@ -520,6 +544,14 @@ select {
 .timer-section-info { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
 .timer-limit { font-size: 12.5px; color: var(--text-muted); }
 .timer-running { color: var(--accent) !important; }
+
+.section-scoreboard { display:flex; align-items:center; gap:12px; margin:0 0 12px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--bg-elevated); color:var(--text-primary); }
+.section-scoreboard strong { display:block; font-size:20px; line-height:1.1; }
+.section-scoreboard > span { font-size:12px; font-weight:600; color:var(--text-secondary); }
+.listening-scoreboard { border-color:rgba(2,132,199,.18); background:rgba(2,132,199,.06); color:var(--listening-color); }
+.reading-scoreboard { border-color:rgba(5,150,105,.18); background:var(--success-bg); color:var(--reading-color); }
+.writing-scoreboard { border-color:rgba(217,119,6,.18); background:var(--warning-bg); color:var(--writing-color); }
+.speaking-scoreboard { border-color:rgba(124,58,237,.18); background:var(--purple-bg); color:var(--speaking-color); }
 
 /* ─── Score Pill ────────────────────────────────────────────────────────── */
 .score-pill {
@@ -725,4 +757,6 @@ select {
   .main-content { margin-left: 50px; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .form-row { flex-direction: column; }
+  .session-timer { top: 4px; flex-wrap: wrap; }
+  .timer-target { margin-left: auto; }
 }

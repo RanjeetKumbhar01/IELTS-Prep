@@ -10,6 +10,8 @@ let currentSection = null;
 let timerInterval = null;
 let timerSeconds  = 0;
 let timerRunning  = false;
+let activeReadingPassage = null;
+let targetAlertedFor = null;
 
 // ─── Timer ───────────────────────────────────────────────────────────────
 
@@ -28,8 +30,35 @@ function stopTimer() {
   document.getElementById('btn-timer-stop').classList.add('hidden');
   document.getElementById('timer-display').classList.remove('timer-running');
 }
-function resetTimer() { stopTimer(); timerSeconds = 0; updateTimerDisplay(); }
-function updateTimerDisplay() { document.getElementById('timer-display').textContent = formatTime(timerSeconds); }
+function resetTimer() { stopTimer(); timerSeconds = 0; targetAlertedFor = null; updateTimerDisplay(); }
+function updateTimerDisplay() {
+  const display = document.getElementById('timer-display');
+  display.textContent = formatTime(timerSeconds);
+  // Accept the dedicated target field, while treating the existing Time field as a
+  // target too when no target has been set. This keeps the alert intuitive for
+  // sessions created before the dedicated target field existed.
+  const targetMinutes = activeReadingPassage
+    ? Number(document.getElementById(`read-p${activeReadingPassage}-target`)?.value || document.getElementById(`read-p${activeReadingPassage}-time`)?.value || 0)
+    : 0;
+  const targetSeconds = targetMinutes * 60;
+  const reachedTarget = targetSeconds > 0 && timerSeconds >= targetSeconds;
+  display.classList.toggle('over-target', reachedTarget);
+  document.getElementById('timer-target-wrap').classList.toggle('over-target', reachedTarget);
+  if (reachedTarget && targetAlertedFor !== activeReadingPassage) {
+    targetAlertedFor = activeReadingPassage;
+    display.classList.add('timer-alert');
+    setTimeout(() => display.classList.remove('timer-alert'), 3200);
+  }
+}
+
+function setActiveReadingPassage(passageNum) {
+  activeReadingPassage = passageNum;
+  targetAlertedFor = null;
+  const target = document.getElementById(`read-p${passageNum}-target`)?.value || document.getElementById(`read-p${passageNum}-time`)?.value || '';
+  document.getElementById('timer-target').textContent = target ? `${target} min` : 'Not set';
+  document.getElementById('timer-target-wrap').classList.remove('hidden');
+  updateTimerDisplay();
+}
 
 document.getElementById('btn-timer-start').addEventListener('click', startTimer);
 document.getElementById('btn-timer-stop').addEventListener('click', stopTimer);
@@ -46,6 +75,9 @@ function switchSection(sectionName) {
   const limits = { Listening: '30 min', Reading: '60 min', Writing: '60 min', Speaking: '14 min' };
   document.getElementById('timer-section-info').textContent = sectionName;
   document.getElementById('timer-limit').textContent = `Limit: ${limits[sectionName]}`;
+  activeReadingPassage = null;
+  document.getElementById('timer-target-wrap').classList.toggle('hidden', sectionName !== 'Reading');
+  if (sectionName === 'Reading') setActiveReadingPassage(1);
   resetTimer();
 }
 
@@ -84,7 +116,89 @@ function updateTally() {
     const el = document.getElementById(`${sec.toLowerCase()}-tally`);
     if (el) el.textContent = `${correct} correct / ${all.length} total (${answered} answered)`;
   });
+
+  const reading = document.getElementById('panel-Reading');
+  if (!reading) return;
+  const all = reading.querySelectorAll('.correct-toggle');
+  const correct = [...all].filter(b => b.dataset.val === '1').length;
+  const marked = [...all].filter(b => b.dataset.val !== '').length;
+  const header = document.getElementById('reading-header-tally');
+  const detail = document.getElementById('reading-header-detail');
+  if (header) header.textContent = `${correct} / ${all.length}`;
+  if (detail) detail.textContent = `${marked} marked · ${all.length - marked} to check`;
+
+  updateQuestionScoreboard('Listening');
+  updateQuestionScoreboard('Reading');
+  updateBandScoreboard('Writing', IELTS.WRITING_TASKS.map(task => `write-t${task.num}-score`));
+  updateBandScoreboard('Speaking', IELTS.SPEAKING_PARTS.map(part => `speak-p${part.num}-score`));
+
+  IELTS.READING_PASSAGES.forEach(passage => {
+    const partId = `read-p${passage.num}`;
+    const rows = document.querySelectorAll(`#${partId}-body .q-row`);
+    const partCorrect = [...rows].filter(row => row.querySelector('.correct-toggle')?.dataset.val === '1').length;
+    const badge = document.getElementById(`${partId}-badge`);
+    const scoreInput = document.getElementById(`${partId}-score-inp`);
+    const maxInput = document.getElementById(`${partId}-max`);
+    if (badge) badge.textContent = `${partCorrect}/${rows.length}`;
+    if (scoreInput) scoreInput.value = partCorrect;
+    if (maxInput) maxInput.value = rows.length;
+  });
+
+  IELTS.LISTENING_PARTS.forEach(part => {
+    const partId = `listen-p${part.num}`;
+    const rows = document.querySelectorAll(`#${partId}-body .q-row`);
+    const partCorrect = [...rows].filter(row => row.querySelector('.correct-toggle')?.dataset.val === '1').length;
+    const badge = document.getElementById(`${partId}-badge`);
+    const scoreInput = document.getElementById(`${partId}-score-inp`);
+    const maxInput = document.getElementById(`${partId}-max`);
+    if (badge) badge.textContent = `${partCorrect}/${rows.length}`;
+    if (scoreInput) scoreInput.value = partCorrect;
+    if (maxInput) maxInput.value = rows.length;
+  });
 }
+
+function updateQuestionScoreboard(sectionType) {
+  const panel = document.getElementById(`panel-${sectionType}`);
+  const all = panel?.querySelectorAll('.correct-toggle') || [];
+  const correct = [...all].filter(button => button.dataset.val === '1').length;
+  const marked = [...all].filter(button => button.dataset.val !== '').length;
+  const header = document.getElementById(`${sectionType.toLowerCase()}-header-tally`);
+  const detail = document.getElementById(`${sectionType.toLowerCase()}-header-detail`);
+  if (header) header.textContent = `${correct} / ${all.length}`;
+  if (detail) detail.textContent = `${marked} marked · ${all.length - marked} to check`;
+}
+
+function updateBandScoreboard(sectionType, scoreIds) {
+  const values = scoreIds
+    .map(id => document.getElementById(id)?.value)
+    .filter(value => value !== undefined && value !== '')
+    .map(Number)
+    .filter(value => Number.isFinite(value) && value >= 0);
+  const header = document.getElementById(`${sectionType.toLowerCase()}-header-tally`);
+  const detail = document.getElementById(`${sectionType.toLowerCase()}-header-detail`);
+  if (!header || !detail) return;
+  header.textContent = values.length ? (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1) : '—';
+  detail.textContent = values.length ? `${values.length} of ${scoreIds.length} scores entered` : `Add ${sectionType === 'Writing' ? 'Task' : 'part'} bands`;
+}
+
+function updateQuestionNumbers(sectionType) {
+  const parts = sectionType === 'Reading' ? IELTS.READING_PASSAGES : IELTS.LISTENING_PARTS;
+  const prefix = sectionType === 'Reading' ? 'read-p' : 'listen-p';
+  let offset = 0;
+  parts.forEach(part => {
+    const tbody = document.getElementById(`${prefix}${part.num}-body`);
+    if (!tbody) return;
+    tbody.querySelectorAll('tr.q-row').forEach((row, index) => {
+      row.dataset.qnum = index + 1;
+      const numCell = row.querySelector('.q-num');
+      if (numCell) numCell.textContent = offset + index + 1;
+    });
+    offset += tbody.querySelectorAll('tr.q-row').length;
+  });
+}
+
+function updateReadingQuestionNumbers() { updateQuestionNumbers('Reading'); }
+function updateListeningQuestionNumbers() { updateQuestionNumbers('Listening'); }
 
 // ─── Question Row Builder ────────────────────────────────────────────────
 
@@ -127,6 +241,8 @@ function deleteQuestionRow(btn) {
     });
   }
   updateTally();
+  if (tbody?.id.startsWith('read-p')) updateReadingQuestionNumbers();
+  if (tbody?.id.startsWith('listen-p')) updateListeningQuestionNumbers();
 }
 
 function addQuestionRow(tbodyId, qtype) {
@@ -146,6 +262,8 @@ function addQuestionRow(tbodyId, qtype) {
     <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
+  if (tbodyId.startsWith('read-p')) updateReadingQuestionNumbers();
+  if (tbodyId.startsWith('listen-p')) updateListeningQuestionNumbers();
   updateTally();
 }
 
@@ -197,6 +315,8 @@ function rebuildPartQuestions(partId) {
   if (maxInp) maxInp.placeholder = String(count);
 
   updateTally();
+  if (partId.startsWith('read-p')) updateReadingQuestionNumbers();
+  if (partId.startsWith('listen-p')) updateListeningQuestionNumbers();
 }
 
 // ─── Part Settings HTML ───────────────────────────────────────────────────
@@ -223,8 +343,15 @@ function buildPartSettingsHTML(partId, secData, partQType, qCount) {
       <div class="form-group">
         <label>Time (min)</label>
         <input type="number" id="${partId}-time" min="0" max="90"
-          value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:70px;" />
+          value="${secData ? Math.round(secData.time_taken_seconds / 60) : ''}" placeholder="0" style="width:70px;"
+          ${partId.startsWith('read-p') ? `oninput="if (activeReadingPassage === ${partId.replace('read-p', '')}) setActiveReadingPassage(${partId.replace('read-p', '')})"` : ''} />
       </div>
+      ${partId.startsWith('read-p') ? `<div class="form-group">
+        <label>Timer alert at (min)</label>
+        <input type="number" id="${partId}-target" min="0" max="90"
+          value="${secData?.target_time_seconds ? Math.round(secData.target_time_seconds / 60) : ''}" placeholder="e.g. 12" style="width:78px;"
+          oninput="if (activeReadingPassage === ${partId.replace('read-p', '')}) setActiveReadingPassage(${partId.replace('read-p', '')})" />
+      </div>` : ''}
       <div class="form-group">
         <label>Score</label>
         <input type="number" id="${partId}-score-inp" min="0"
@@ -314,6 +441,7 @@ function buildListeningParts(existingData) {
   });
 
   document.querySelector('#listen-part-1')?.classList.add('open');
+  updateListeningQuestionNumbers();
 }
 
 // ─── Reading Passages Builder ─────────────────────────────────────────────
@@ -369,6 +497,20 @@ function buildReadingPassages(existingData) {
   });
 
   document.querySelector('#read-p1')?.classList.add('open');
+  updateReadingQuestionNumbers();
+  observeReadingPassages();
+}
+
+function observeReadingPassages() {
+  const blocks = IELTS.READING_PASSAGES
+    .map(passage => document.getElementById(`read-p${passage.num}`))
+    .filter(Boolean);
+  if (!blocks.length || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible && currentSection === 'Reading') setActiveReadingPassage(Number(visible.target.id.replace('read-p', '')));
+  }, { threshold: 0.35 });
+  blocks.forEach(block => observer.observe(block));
 }
 
 // ─── Writing Tasks Builder ────────────────────────────────────────────────
@@ -397,7 +539,7 @@ function buildWritingTasks(existingData) {
         </div>
         <div class="form-group">
           <label>Band Score</label>
-          <input type="number" id="write-t${task.num}-score" min="0" max="9" step="0.5"
+          <input type="number" id="write-t${task.num}-score" min="0" max="9" step="0.5" oninput="updateTally()"
             value="${secData ? secData.score : ''}" placeholder="e.g. 6.5" style="width:80px;" />
         </div>
       </div>
@@ -457,7 +599,7 @@ function buildSpeakingParts(existingData) {
         </div>
         <div class="flex gap-2 items-center" style="flex-wrap:wrap;">
           <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Band:</label>
-          <input type="number" id="speak-p${part.num}-score" min="0" max="9" step="0.5"
+          <input type="number" id="speak-p${part.num}-score" min="0" max="9" step="0.5" oninput="updateTally()"
             value="${secData ? secData.score : ''}" placeholder="—"
             style="width:50px;text-align:center;" />
           <label style="text-transform:none;font-size:11.5px;margin:0;color:var(--text-muted);">Time (min):</label>
@@ -526,6 +668,7 @@ async function saveSectionPart(sectionType, partNum) {
 
   const partQType = document.getElementById(`${prefix}-qtype`)?.value || '';
   const timeVal   = document.getElementById(`${prefix}-time`)?.value;
+  const targetVal = document.getElementById(`${prefix}-target`)?.value;
   const scoreVal  = document.getElementById(`${prefix}-score-inp`)?.value;
   const maxVal    = document.getElementById(`${prefix}-max`)?.value;
   const countVal  = document.getElementById(`${prefix}-qcount`)?.value;
@@ -535,6 +678,7 @@ async function saveSectionPart(sectionType, partNum) {
     section_type: sectionType,
     part_number:  partNum,
     time_taken_seconds: timeVal ? parseInt(timeVal) * 60 : 0,
+    target_time_seconds: targetVal ? parseInt(targetVal) * 60 : 0,
     score:    scoreVal ? parseFloat(scoreVal) : 0,
     max_score: maxVal ? parseFloat(maxVal) : (parseInt(countVal) || 10),
     notes
@@ -632,6 +776,7 @@ async function loadSessionData() {
   try {
     const test = await api.get(`/api/tests/${TEST_ID}`);
     currentTest = test;
+    const sessionScope = test.test_section || 'Full Test';
 
     document.getElementById('breadcrumb-test').textContent = `Test ${test.test_number}`;
     document.title = `Test ${test.test_number} — IELTS Prep`;
@@ -661,6 +806,7 @@ async function loadSessionData() {
     buildReadingPassages(existData('Reading'));
     buildWritingTasks(existData('Writing'));
     buildSpeakingParts(existData('Speaking'));
+    configureSessionScope(sessionScope);
 
     const allBooks = await api.get('/api/books');
     for (const book of allBooks) {
@@ -681,11 +827,24 @@ async function loadSessionData() {
     document.getElementById('edit-test-notes').value = test.notes || '';
 
     updateTally();
-    switchSection('Listening');
+    switchSection(sessionScope === 'Full Test' ? 'Listening' : sessionScope);
   } catch(e) {
     console.error(e);
     Toast.error('Failed to load session data');
   }
+}
+
+function configureSessionScope(sessionScope) {
+  if (sessionScope === 'Full Test') return;
+  document.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.classList.toggle('hidden', tab.dataset.section !== sessionScope);
+  });
+  document.querySelector('.tabs-bar')?.classList.add('single-section-tabs');
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('session-out-of-scope', panel.id !== `panel-${sessionScope}`);
+  });
+  const badge = document.getElementById('test-mode-badge');
+  badge.textContent = `${sessionScope} session`;
 }
 
 // ─── Edit Test ────────────────────────────────────────────────────────────

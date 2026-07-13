@@ -61,6 +61,7 @@ function renderTests(tests) {
           <span>Date: ${formatDate(test.date)}</span>
           <span>·</span>
           <span>${test.section_count} section${test.section_count !== 1 ? 's' : ''} filled</span>
+          ${test.test_section && test.test_section !== 'Full Test' ? `<span>·</span><span>${escapeHtml(test.test_section)} only</span>` : ''}
           ${test.total_score !== null ? `<span>·</span><span class="score-pill">Band: ${test.total_score}</span>` : ''}
         </div>
         ${test.notes ? `<div style="margin-top:4px;font-size:12px;color:var(--text-secondary);">Notes: ${escapeHtml(test.notes)}</div>` : ''}
@@ -120,10 +121,11 @@ document.getElementById('btn-save-test').addEventListener('click', async () => {
   const mode    = document.getElementById('test-mode').value;
   const date    = document.getElementById('test-date').value;
   const notes   = document.getElementById('test-notes').value.trim();
+  const test_section = document.getElementById('test-section').value;
 
   if (!testNum) { Toast.error('Please enter a test number'); return; }
   try {
-    const test = await api.post(`/api/books/${BOOK_ID}/tests`, { test_number: testNum, mode, date, notes });
+    const test = await api.post(`/api/books/${BOOK_ID}/tests`, { test_number: testNum, mode, date, notes, test_section });
     Modal.close('modal-new-test');
     Toast.success(`Test created`);
     window.location.href = `/session.html?testId=${test.id}`;

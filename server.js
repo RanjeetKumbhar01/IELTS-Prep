@@ -137,12 +137,12 @@ function registerRoutes() {
       const book = await db.get('SELECT id FROM books WHERE id = ? AND user_id = ?', [req.params.bookId, req.userId]);
       if (!book) return res.status(403).json({ error: 'Unauthorized' });
 
-      const { test_number, mode, date, notes } = req.body;
+      const { test_number, mode, date, notes, test_section } = req.body;
       const now = new Date().toLocaleString('sv').replace(' ','T');
       const d = date || new Date().toISOString().split('T')[0];
       const result = await db.run(
-        'INSERT INTO tests (book_id, test_number, mode, date, notes, created_at) VALUES (?,?,?,?,?,?)',
-        [req.params.bookId, test_number, mode || 'practice', d, notes || '', now]
+        'INSERT INTO tests (book_id, test_number, mode, test_section, date, notes, created_at) VALUES (?,?,?,?,?,?,?)',
+        [req.params.bookId, test_number, mode || 'practice', test_section || 'Full Test', d, notes || '', now]
       );
       const test = await db.get('SELECT * FROM tests WHERE id = ?', [result.lastInsertRowid]);
       res.json(test);
@@ -218,7 +218,7 @@ function registerRoutes() {
       `, [req.params.testId, req.userId]);
       if (!test) return res.status(403).json({ error: 'Unauthorized' });
 
-      const { section_type, part_number, time_taken_seconds, score, max_score, notes } = req.body;
+      const { section_type, part_number, time_taken_seconds, target_time_seconds, score, max_score, notes } = req.body;
       const pn = part_number || 1;
 
       const existing = await db.get(
@@ -229,15 +229,15 @@ function registerRoutes() {
       let sectionId;
       if (existing) {
         await db.run(
-          'UPDATE sections SET time_taken_seconds=?, score=?, max_score=?, notes=? WHERE id=?',
-          [time_taken_seconds || 0, score || 0, max_score || 0, notes || '', existing.id]
+          'UPDATE sections SET time_taken_seconds=?, target_time_seconds=?, score=?, max_score=?, notes=? WHERE id=?',
+          [time_taken_seconds || 0, target_time_seconds || 0, score || 0, max_score || 0, notes || '', existing.id]
         );
         sectionId = existing.id;
       } else {
         const now = new Date().toLocaleString('sv').replace(' ','T');
         const result = await db.run(
-          'INSERT INTO sections (test_id, section_type, part_number, time_taken_seconds, score, max_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?)',
-          [req.params.testId, section_type, pn, time_taken_seconds || 0, score || 0, max_score || 0, notes || '', now]
+          'INSERT INTO sections (test_id, section_type, part_number, time_taken_seconds, target_time_seconds, score, max_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?,?)',
+          [req.params.testId, section_type, pn, time_taken_seconds || 0, target_time_seconds || 0, score || 0, max_score || 0, notes || '', now]
         );
         sectionId = result.lastInsertRowid;
       }
@@ -451,12 +451,12 @@ function registerRoutes() {
         await db.run('INSERT INTO books (id, name, created_at, user_id) VALUES (?,?,?,?)', [b.id, b.name, b.created_at, req.userId]);
       }
       for (const t of tests) {
-        await db.run('INSERT INTO tests (id, book_id, test_number, mode, date, total_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?)',
-          [t.id, t.book_id, t.test_number, t.mode, t.date, t.total_score, t.notes, t.created_at]);
+        await db.run('INSERT INTO tests (id, book_id, test_number, mode, test_section, date, total_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?,?)',
+          [t.id, t.book_id, t.test_number, t.mode, t.test_section || 'Full Test', t.date, t.total_score, t.notes, t.created_at]);
       }
       for (const s of sections) {
-        await db.run('INSERT INTO sections (id, test_id, section_type, part_number, time_taken_seconds, score, max_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?,?)',
-          [s.id, s.test_id, s.section_type, s.part_number, s.time_taken_seconds, s.score, s.max_score, s.notes, s.created_at]);
+        await db.run('INSERT INTO sections (id, test_id, section_type, part_number, time_taken_seconds, target_time_seconds, score, max_score, notes, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
+          [s.id, s.test_id, s.section_type, s.part_number, s.time_taken_seconds, s.target_time_seconds || 0, s.score, s.max_score, s.notes, s.created_at]);
       }
       for (const q of questions) {
         await db.run('INSERT INTO questions (id, section_id, question_number, question_type, my_answer, correct_answer, is_correct, personal_note, word_count) VALUES (?,?,?,?,?,?,?,?,?)',

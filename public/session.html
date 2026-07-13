@@ -62,9 +62,9 @@
       </div>
 
       <!-- Active Section Info & Timer -->
-      <div class="flex items-center justify-between mb-4 card" style="padding: 10px 14px; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border);">
+      <div class="session-timer card">
         <div class="flex items-center gap-3">
-          <h2 class="page-title" id="timer-section-info" style="font-size: 15px; margin-bottom: 0;">Listening</h2>
+          <div><span class="timer-label">Current section</span><h2 class="page-title" id="timer-section-info" style="font-size: 15px; margin-bottom: 0;">Listening</h2></div>
           <span class="badge badge-blue" id="timer-limit" style="font-size: 11px;">Limit: 30 min</span>
         </div>
         <div class="flex items-center gap-3">
@@ -75,10 +75,15 @@
             <button class="btn btn-ghost btn-sm" id="btn-timer-reset" style="padding: 4px 10px;">Reset</button>
           </div>
         </div>
+        <div class="timer-target hidden" id="timer-target-wrap"><span class="timer-label">Passage target</span><span id="timer-target">—</span></div>
       </div>
 
       <!-- ─── LISTENING PANEL ─── -->
       <div class="tab-panel active" id="panel-Listening">
+        <div class="section-scoreboard listening-scoreboard" aria-live="polite">
+          <div><span class="timer-label">Listening score</span><strong id="listening-header-tally">0 / 0</strong></div>
+          <span id="listening-header-detail">0 marked</span>
+        </div>
         <div id="listening-parts"></div>
         <div class="section-save-bar">
           <div class="correct-tally" id="listening-tally">0 correct · 0 answered / 0 total</div>
@@ -88,6 +93,10 @@
 
       <!-- ─── READING PANEL ─── -->
       <div class="tab-panel" id="panel-Reading">
+        <div class="section-scoreboard reading-scoreboard" id="reading-scoreboard" aria-live="polite">
+          <div><span class="timer-label">Reading score</span><strong id="reading-header-tally">0 / 0</strong></div>
+          <span id="reading-header-detail">0 marked</span>
+        </div>
         <div id="reading-passages"></div>
         <div class="section-save-bar">
           <div class="correct-tally" id="reading-tally">0 correct · 0 answered / 0 total</div>
@@ -97,6 +106,10 @@
 
       <!-- ─── WRITING PANEL ─── -->
       <div class="tab-panel" id="panel-Writing">
+        <div class="section-scoreboard writing-scoreboard" aria-live="polite">
+          <div><span class="timer-label">Writing band</span><strong id="writing-header-tally">—</strong></div>
+          <span id="writing-header-detail">Add Task 1 and Task 2 bands</span>
+        </div>
         <div id="writing-tasks"></div>
         <div class="section-save-bar">
           <div></div>
@@ -106,6 +119,10 @@
 
       <!-- ─── SPEAKING PANEL ─── -->
       <div class="tab-panel" id="panel-Speaking">
+        <div class="section-scoreboard speaking-scoreboard" aria-live="polite">
+          <div><span class="timer-label">Speaking band</span><strong id="speaking-header-tally">—</strong></div>
+          <span id="speaking-header-detail">Add part bands</span>
+        </div>
         <div id="speaking-parts"></div>
         <div class="section-save-bar">
           <div></div>
