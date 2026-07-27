@@ -229,7 +229,6 @@ function buildQuestionRow(num, q = {}) {
       <td class="q-num">${num}</td>
       <td><input type="text" class="q-answer-input" value="${escapeHtml(q.my_answer || '')}" placeholder="Your answer" /></td>
       <td><button class="correct-toggle" data-val="${v}" onclick="cycleCorrect(this)">${icons[v] || '·'}</button></td>
-      <td><input type="text" class="q-note-input" value="${escapeHtml(q.personal_note || '')}" placeholder="Note" /></td>
       <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
     </tr>`;
 }
@@ -277,7 +276,6 @@ function addQuestionRow(tbodyId, qtype) {
     <td class="q-num">${nextNum}</td>
     <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
     <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
-    <td><input type="text" class="q-note-input" placeholder="Note" /></td>
     <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
@@ -319,7 +317,6 @@ function rebuildPartQuestions(partId) {
         <td class="q-num">${i}</td>
         <td><input type="text" class="q-answer-input" placeholder="Your answer" /></td>
         <td><button class="correct-toggle" data-val="" onclick="cycleCorrect(this)">·</button></td>
-        <td><input type="text" class="q-note-input" placeholder="Note" /></td>
         <td><button class="btn-del-row" onclick="deleteQuestionRow(this)">✕</button></td>
       `;
       tbody.appendChild(tr);
@@ -387,7 +384,6 @@ function buildQTable(partId, tbodyHtml) {
             <th style="width:30px;">#</th>
             <th>My Answer</th>
             <th style="width:40px;">Mark</th>
-            <th style="width:200px;">Note</th>
             <th style="width:30px;"></th>
           </tr>
         </thead>
@@ -703,7 +699,6 @@ async function saveSectionPart(sectionType, partNum) {
   rows.forEach(row => {
     const qnum   = parseInt(row.dataset.qnum);
     const myAnswerInput = row.querySelector('.q-answer-input');
-    const noteInput     = row.querySelector('.q-note-input');
     const toggle = row.querySelector('.correct-toggle');
     const valMap = { '1': 1, '0': 0, '': null };
     questions.push({
@@ -712,7 +707,7 @@ async function saveSectionPart(sectionType, partNum) {
       my_answer:       myAnswerInput?.value || '',
       correct_answer:  '',
       is_correct:      valMap[toggle?.dataset.val ?? ''] ?? null,
-      personal_note:   noteInput?.value || '',
+      personal_note:   '',
       word_count:      0
     });
   });
