@@ -219,6 +219,10 @@ body {
 /* ─── Main Content ──────────────────────────────────────────────────────── */
 .main-content { margin-left: 210px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
+/* ─── Session Page (Hide Sidebar During Test) ───────────────────────────── */
+body.session-page .sidebar { display: none; }
+body.session-page .main-content { margin-left: 0; }
+
 /* ─── Top Bar ───────────────────────────────────────────────────────────── */
 .topbar {
   height: 52px;
@@ -947,6 +951,8 @@ select {
   .sidebar .logo-text, .sidebar .logo-sub, .sidebar .nav-item span:not(.nav-icon), .sidebar .nav-label { display: none; }
   .sidebar .nav-item { justify-content: center; padding: 8px; }
   .main-content { margin-left: 50px; }
+  body.session-page .sidebar { display: none; }
+  body.session-page .main-content { margin-left: 0; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .form-row { flex-direction: column; }
   .session-timer { top: 4px; flex-wrap: wrap; }
