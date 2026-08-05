@@ -13,6 +13,10 @@ let timerRunning  = false;
 let activeReadingPassage = null;
 let targetAlertedFor = null;
 
+// Auto-save
+let autoSaveInterval = null;
+const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
 // ─── Timer ───────────────────────────────────────────────────────────────
 
 function startTimer() {
@@ -69,6 +73,75 @@ function setActiveReadingPassage(passageNum) {
   document.getElementById('timer-target').textContent = target ? `${target} min` : 'Not set';
   document.getElementById('timer-target-wrap').classList.remove('hidden');
   updateTimerDisplay();
+}
+
+// ─── Auto-save ────────────────────────────────────────────────────────────
+
+function startAutoSave() {
+  if (autoSaveInterval) return;
+  autoSaveInterval = setInterval(() => {
+    saveAllSections();
+  }, AUTO_SAVE_INTERVAL_MS);
+  console.log('Auto-save started (every 5 minutes)');
+}
+
+function stopAutoSave() {
+  if (autoSaveInterval) {
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+    console.log('Auto-save stopped');
+  }
+}
+
+async function saveAllSections() {
+  if (!TEST_ID) return;
+  try {
+    const promises = [
+      ...IELTS.LISTENING_PARTS.map(p => saveSectionPart('Listening', p.num)),
+      ...IELTS.READING_PASSAGES.map(p => saveSectionPart('Reading', p.num)),
+      ...IELTS.WRITING_TASKS.map(t => saveWritingTask(t.num)),
+      ...IELTS.SPEAKING_PARTS.map(p => saveSpeakingPart(p.num))
+    ];
+    await Promise.all(promises);
+    console.log('Auto-save completed at', new Date().toLocaleTimeString());
+    // Optional: Show a subtle notification
+    showAutoSaveNotification();
+  } catch(e) {
+    console.error('Auto-save failed:', e);
+  }
+}
+
+function showAutoSaveNotification() {
+  // Create or update a subtle auto-save indicator
+  let indicator = document.getElementById('auto-save-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'auto-save-indicator';
+    indicator.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success, #10b981);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1000;
+    `;
+    document.body.appendChild(indicator);
+  }
+  indicator.textContent = `Auto-saved at ${new Date().toLocaleTimeString()}`;
+  indicator.style.opacity = '1';
+  indicator.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    indicator.style.opacity = '0';
+    indicator.style.transform = 'translateY(20px)';
+  }, 3000);
 }
 
 document.getElementById('btn-timer-start').addEventListener('click', startTimer);
@@ -837,6 +910,9 @@ async function loadSessionData() {
 
     updateTally();
     switchSection(sessionScope === 'Full Test' ? 'Listening' : sessionScope);
+    
+    // Start auto-save after session loads
+    startAutoSave();
   } catch(e) {
     console.error(e);
     Toast.error('Failed to load session data');
@@ -892,3 +968,12 @@ function escapeHtml(str) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 loadSessionData();
+
+// Stop auto-save when leaving the page
+window.addEventListener('beforeunload', () => {
+  stopAutoSave();
+  // Optionally do a final save
+  if (TEST_ID) {
+    saveAllSections();
+  }
+});
