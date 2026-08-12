@@ -46,7 +46,43 @@ function renderTests(tests) {
   if (!tests.length) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
+  const sectionGroups = [
+    { name: 'Full Test', label: 'Full-length tests' },
+    { name: 'Listening', label: 'Listening tests' },
+    { name: 'Reading', label: 'Reading tests' },
+    { name: 'Writing', label: 'Writing tests' },
+    { name: 'Speaking', label: 'Speaking tests' }
+  ];
+
+  const groupedTests = new Map(sectionGroups.map(group => [group.name, []]));
   tests.forEach(test => {
+    const section = groupedTests.has(test.test_section) ? test.test_section : 'Full Test';
+    groupedTests.get(section).push(test);
+  });
+
+  sectionGroups.forEach(group => {
+    const groupTests = groupedTests.get(group.name);
+    if (!groupTests.length) return;
+
+    groupTests.sort(compareTests);
+    const section = document.createElement('section');
+    section.className = 'test-list-section';
+    section.innerHTML = `
+      <div class="test-list-section-header">
+        <h2>${group.label}</h2>
+        <span>${groupTests.length} test${groupTests.length !== 1 ? 's' : ''}</span>
+      </div>
+    `;
+
+    const cards = document.createElement('div');
+    cards.className = 'test-list-section-cards';
+    groupTests.forEach(test => cards.appendChild(createTestCard(test)));
+    section.appendChild(cards);
+    list.appendChild(section);
+  });
+}
+
+function createTestCard(test) {
     const div = document.createElement('div');
     div.className = 'test-card animate-fade-in';
     div.innerHTML = `
@@ -71,8 +107,22 @@ function renderTests(tests) {
         <button class="btn btn-danger btn-sm" onclick="deleteTest(${test.id})">Delete</button>
       </div>
     `;
-    list.appendChild(div);
-  });
+    return div;
+}
+
+function compareTests(a, b) {
+  const numberComparison = String(a.test_number || '').localeCompare(
+    String(b.test_number || ''),
+    undefined,
+    { numeric: true, sensitivity: 'base' }
+  );
+  if (numberComparison !== 0) return numberComparison;
+
+  // Keep separate attempts with the same test number in newest-first date order.
+  const dateComparison = String(b.date || '').localeCompare(String(a.date || ''));
+  if (dateComparison !== 0) return dateComparison;
+
+  return Number(b.id) - Number(a.id);
 }
 
 // ─── Edit Book ────────────────────────────────────────────────────────────

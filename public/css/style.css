@@ -659,6 +659,29 @@ select {
 .test-meta { font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .test-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
+/* ─── Book Test Groups ──────────────────────────────────────────────────── */
+.test-list-section { display: flex; flex-direction: column; gap: 8px; }
+.test-list-section + .test-list-section { margin-top: 12px; }
+.test-list-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+.test-list-section-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+.test-list-section-header span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.test-list-section-cards { display: flex; flex-direction: column; gap: 8px; }
+
 /* ─── Mode Badge ────────────────────────────────────────────────────────── */
 .mode-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 12.5px; font-weight: 600; }
 
