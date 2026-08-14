@@ -11,12 +11,34 @@ async function loadProgress() {
       api.get('/api/analytics/tests')
     ]);
     allTests = tests;
+
+    // The session history is the useful fallback when a privacy extension or
+    // network policy blocks the externally hosted chart library.  Render it
+    // before attempting charts so a chart failure can never hide test data.
+    renderTestsTable(tests);
+
+    if (typeof window.Chart !== 'function') {
+      showChartUnavailable();
+      return;
+    }
+
     renderProgressChart(progress.bySection);
     renderAvgChart(progress.bySection);
-    renderTestsTable(tests);
   } catch(e) {
     Toast.error('Failed to load analytics');
   }
+}
+
+function showChartUnavailable() {
+  document.querySelectorAll('.chart-wrap-tall').forEach(wrap => {
+    wrap.innerHTML = `
+      <div class="empty-state" style="height:100%;display:flex;align-items:center;justify-content:center;">
+        <div>
+          <h3>Charts unavailable</h3>
+          <p>Your test history is still shown below. Allow cdn.jsdelivr.net to view charts.</p>
+        </div>
+      </div>`;
+  });
 }
 
 // ─── Progress Line Chart ──────────────────────────────────────────────────
