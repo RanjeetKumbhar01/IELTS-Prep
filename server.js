@@ -452,7 +452,10 @@ function registerRoutes() {
       const bySection = await db.all(`
         SELECT t.date, s.section_type, s.score, s.max_score,
           CASE WHEN s.max_score > 0
-            THEN ROUND(CAST(s.score AS NUMERIC) * 100.0 / NULLIF(s.max_score, 0), 1)
+            THEN ROUND(
+              CAST(s.score AS NUMERIC) * 100.0 / NULLIF(CAST(s.max_score AS NUMERIC), 0),
+              1
+            )
             ELSE 0
           END as pct,
           b.name as book_name, t.test_number
