@@ -1346,3 +1346,30 @@ select {
   .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 6px; }
   .session-timer-bar { top: auto; }
 }
+
+/* ─── App Footer ─────────────────────────────────────────────────────────── */
+
+.app-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-elevated);
+  text-align: center;
+}
+
+.app-footer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 3px 0;
+  line-height: 1.5;
+}
+
+.app-footer-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.app-footer-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
