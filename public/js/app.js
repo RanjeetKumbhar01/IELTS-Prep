@@ -216,6 +216,42 @@ const IELTS = {
   }
 };
 
+// ─── AI Evaluation Configuration Helper (Google Gemini) ───────────────────
+
+const IELTS_AI = {
+  DEFAULT_MODEL: 'gemini-3.5-flash',
+  MODELS: [
+    { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash (Fast & Accurate)', provider: 'Google' },
+    { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash (Latest Standard)', provider: 'Google' },
+    { id: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash (High Performance)', provider: 'Google' },
+    { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite (Superfast)', provider: 'Google' }
+  ],
+  getApiKey() {
+    return localStorage.getItem('ielts_gemini_api_key') || '';
+  },
+  setApiKey(key) {
+    localStorage.setItem('ielts_gemini_api_key', (key || '').trim());
+  },
+  getModel() {
+    return localStorage.getItem('ielts_gemini_model') || this.DEFAULT_MODEL;
+  },
+  setModel(model) {
+    localStorage.setItem('ielts_gemini_model', (model || '').trim());
+  },
+  async evaluateWriting({ text, taskNumber, questionPrompt, modelNotes }) {
+    const apiKey = this.getApiKey();
+    const model = this.getModel();
+    return await api.post('/api/ai/evaluate-writing', {
+      text,
+      task_number: taskNumber,
+      question_prompt: questionPrompt,
+      model_notes: modelNotes,
+      api_key: apiKey || undefined,
+      model: model
+    });
+  }
+};
+
 // ─── Cookie Consent Banner ────────────────────────────────────────────────
 
 const CookieConsent = {

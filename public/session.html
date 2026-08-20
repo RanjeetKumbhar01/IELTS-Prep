@@ -55,7 +55,16 @@
           <span class="sep">›</span>
           <a href="#" id="breadcrumb-book">Book</a>
           <span class="sep">›</span>
-          <span class="current" id="breadcrumb-test">Test</span>
+          <span id="breadcrumb-test" class="current">Test</span>
+          <span class="sep hidden" id="breadcrumb-sec-sep">›</span>
+          <span class="current hidden" id="breadcrumb-sec-title">Writing</span>
+        </div>
+        <!-- Section Tabs in topbar (shown during Full Test) -->
+        <div class="tabs-bar topbar-tabs">
+          <button class="tab-btn active" data-section="Listening">Listening</button>
+          <button class="tab-btn" data-section="Reading">Reading</button>
+          <button class="tab-btn" data-section="Writing">Writing</button>
+          <button class="tab-btn" data-section="Speaking">Speaking</button>
         </div>
       </div>
       <div class="topbar-right">
@@ -65,31 +74,27 @@
       </div>
     </header>
 
-    <main class="page-content">
-      <!-- Section Tabs -->
-      <div class="tabs-bar">
-        <button class="tab-btn active" data-section="Listening">Listening</button>
-        <button class="tab-btn" data-section="Reading">Reading</button>
-        <button class="tab-btn" data-section="Writing">Writing</button>
-        <button class="tab-btn" data-section="Speaking">Speaking</button>
-      </div>
-
-      <!-- Active Section Info & Timer -->
-      <div class="session-timer card">
+    <!-- Floating Timer Bar (sticky below topbar, right aligned) -->
+    <div class="session-timer-bar">
+      <div class="timer-bar-inner">
         <div class="flex items-center gap-3">
-          <div><span class="timer-label">Current section</span><h2 class="page-title" id="timer-section-info" style="font-size: 15px; margin-bottom: 0;">Listening</h2></div>
+          <span class="timer-label">Section</span>
+          <span id="timer-section-info" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Listening</span>
           <span class="badge badge-blue" id="timer-limit" style="font-size: 11px;">Limit: 30 min</span>
+          <div class="timer-target hidden" id="timer-target-wrap" style="padding-left:10px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:1px;font-size:12px;font-weight:700;"><span class="timer-label">Passage target</span><span id="timer-target">—</span></div>
         </div>
         <div class="flex items-center gap-3">
-          <span class="timer-digits" id="timer-display" style="font-size: 18px;">00:00</span>
+          <span class="timer-digits" id="timer-display">00:00</span>
           <div class="flex gap-2">
             <button class="btn btn-secondary btn-sm" id="btn-timer-start" style="padding: 4px 10px;">Start</button>
             <button class="btn btn-ghost btn-sm hidden" id="btn-timer-stop" style="padding: 4px 10px;">Pause</button>
             <button class="btn btn-ghost btn-sm" id="btn-timer-reset" style="padding: 4px 10px;">Reset</button>
           </div>
         </div>
-        <div class="timer-target hidden" id="timer-target-wrap"><span class="timer-label">Passage target</span><span id="timer-target">—</span></div>
       </div>
+    </div>
+
+    <main class="page-content">
 
       <!-- ─── LISTENING PANEL ─── -->
       <div class="tab-panel active" id="panel-Listening">
